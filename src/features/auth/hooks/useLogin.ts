@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext.js';
 import { LoginFormValues } from '../utils/auth.validators.js';
 import { handleApiError } from '../../../api/client.js';
+import { sileo } from 'sileo';
 
 export function useLogin() {
   const { login } = useAuth();
@@ -16,6 +17,11 @@ export function useLogin() {
 
     try {
       const user = await login(values);
+
+      sileo.success({
+        title: 'Inicio de sesión exitoso',
+        description: `Bienvenido al sistema, ${user.name || user.email}.`,
+      });
 
       // Redireccion inteligente segun rol y estado de verificacion
       if (user.rol_id === 4) {
@@ -33,7 +39,12 @@ export function useLogin() {
         }
       }
     } catch (error) {
-      setErrorMessage(handleApiError(error));
+      const msg = handleApiError(error);
+      setErrorMessage(msg);
+      sileo.error({
+        title: 'Error de autenticación',
+        description: msg,
+      });
     } finally {
       setIsSubmitting(false);
     }

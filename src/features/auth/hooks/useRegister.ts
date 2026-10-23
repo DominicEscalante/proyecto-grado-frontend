@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext.js';
 import { RegisterCitizenFormValues } from '../utils/auth.validators.js';
 import { handleApiError } from '../../../api/client.js';
+import { sileo } from 'sileo';
 
 export function useRegister() {
   const { register } = useAuth();
@@ -16,10 +17,19 @@ export function useRegister() {
 
     try {
       await register(values);
+      sileo.success({
+        title: 'Registro exitoso',
+        description: 'Tu cuenta ha sido creada. Procede con la verificación de identidad.',
+      });
       // Redirigir directamente al flujo de verificacion de identidad del ciudadano
       navigate('/verificar-identidad');
     } catch (error) {
-      setErrorMessage(handleApiError(error));
+      const msg = handleApiError(error);
+      setErrorMessage(msg);
+      sileo.error({
+        title: 'Error de registro',
+        description: msg,
+      });
     } finally {
       setIsSubmitting(false);
     }
