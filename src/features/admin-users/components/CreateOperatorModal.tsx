@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import {
   XMarkIcon,
-  ShieldCheckIcon,
-  FireIcon,
   ExclamationCircleIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
 import { CreateOperatorData } from '../types/admin-users.types.js';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '../../../components/ui/select.js';
 
 interface CreateOperatorModalProps {
   isOpen: boolean;
@@ -114,44 +119,23 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
             </div>
           )}
 
-          {/* Selector de Institución */}
+          {/* Selector de Institución Operativa con Shadcn/UI Select */}
           <div>
-            <label className="block text-stone-600 font-semibold mb-1.5 font-mono text-[11px] uppercase">
+            <label className="block text-stone-700 font-semibold mb-1 font-mono text-[11px] uppercase">
               Institución Operativa
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setInstitucion('POLICIA')}
-                className={`p-3 rounded-lg border flex items-center gap-2.5 transition-all ${
-                  institucion === 'POLICIA'
-                    ? 'bg-emerald-50 border-emerald-500 text-emerald-900 font-semibold shadow-xs'
-                    : 'bg-[#F8FAFC] border-stone-200 text-stone-600 hover:border-stone-300'
-                }`}
-              >
-                <ShieldCheckIcon className="w-4 h-4 text-emerald-700 shrink-0" />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-[#143601]">Policía Boliviana</span>
-                  <span className="text-[10px] text-stone-500 font-mono">Rol: Operador 110</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setInstitucion('BOMBEROS')}
-                className={`p-3 rounded-lg border flex items-center gap-2.5 transition-all ${
-                  institucion === 'BOMBEROS'
-                    ? 'bg-amber-50 border-amber-500 text-amber-900 font-semibold shadow-xs'
-                    : 'bg-[#F8FAFC] border-stone-200 text-stone-600 hover:border-stone-300'
-                }`}
-              >
-                <FireIcon className="w-4 h-4 text-amber-600 shrink-0" />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-[#143601]">Cuerpo de Bomberos</span>
-                  <span className="text-[10px] text-stone-500 font-mono">Rol: Operador 119</span>
-                </div>
-              </button>
-            </div>
+            <Select
+              value={institucion}
+              onValueChange={(val) => setInstitucion(val as 'POLICIA' | 'BOMBEROS')}
+            >
+              <SelectTrigger className="w-full h-9 bg-[#F8FAFC] border-stone-300">
+                <SelectValue placeholder="Selecciona institución operativa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="POLICIA">Policía Boliviana (Rol: Operador 110)</SelectItem>
+                <SelectItem value="BOMBEROS">Cuerpo de Bomberos (Rol: Operador 119)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Nombres y Apellidos */}

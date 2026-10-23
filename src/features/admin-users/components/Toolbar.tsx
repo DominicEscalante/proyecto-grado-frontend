@@ -8,9 +8,15 @@ import {
   MagnifyingGlassIcon,
   ArrowPathIcon,
   XMarkIcon,
-  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { RoleFilter, StatusFilter, UserMetrics } from '../types/admin-users.types.js';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '../../../components/ui/select.js';
 
 interface ToolbarProps {
   metrics: UserMetrics;
@@ -106,19 +112,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
 
-        {/* Filtro por Estado con ChevronDownIcon Limpio (Sin borde nativo feo) */}
-        <div className="relative inline-flex items-center rounded-lg bg-[#F8FAFC] border border-stone-200">
-          <select
-            value={statusFilter}
-            onChange={(e) => onSelectStatusFilter(e.target.value as StatusFilter)}
-            className="appearance-none bg-transparent pl-3 pr-8 py-1.5 text-xs text-stone-800 font-medium focus:outline-none cursor-pointer"
-          >
-            <option value="ALL">Estado: Todos</option>
-            <option value="ACTIVE">Activos</option>
-            <option value="SUSPENDED">Suspendidos</option>
-          </select>
-          <ChevronDownIcon className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 pointer-events-none" />
-        </div>
+        {/* Filtro por Estado con Componente Shadcn/UI Select */}
+        <Select
+          value={statusFilter}
+          onValueChange={(val) => onSelectStatusFilter(val as StatusFilter)}
+        >
+          <SelectTrigger className="w-[140px] shrink-0">
+            <SelectValue placeholder="Estado" />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectItem value="ALL">Estado: Todos</SelectItem>
+            <SelectItem value="ACTIVE">Activos</SelectItem>
+            <SelectItem value="SUSPENDED">Suspendidos</SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* Botón Refrescar */}
         <button

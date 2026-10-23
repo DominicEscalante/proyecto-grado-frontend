@@ -4,3 +4,4 @@ export * from './Card.js';
 export * from './AppLogo.js';
 export * from './MountainBackground.js';
 export * from './SplashScreen.js';
+export * from './select.js';

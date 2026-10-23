@@ -5,6 +5,13 @@ import {
   PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 import { AdminUserItem, EditUserData } from '../types/admin-users.types.js';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '../../../components/ui/select.js';
 
 interface EditUserModalProps {
   user: AdminUserItem | null;
@@ -138,14 +145,18 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             <>
               <div>
                 <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Institución</label>
-                <select
+                <Select
                   value={institucion}
-                  onChange={(e) => setInstitucion(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
+                  onValueChange={(val) => setInstitucion(val as 'POLICIA' | 'BOMBEROS')}
                 >
-                  <option value="POLICIA">Policía Boliviana</option>
-                  <option value="BOMBEROS">Cuerpo de Bomberos</option>
-                </select>
+                  <SelectTrigger className="w-full h-9 bg-[#F8FAFC] border-stone-300">
+                    <SelectValue placeholder="Selecciona institución" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="POLICIA">Policía Boliviana</SelectItem>
+                    <SelectItem value="BOMBEROS">Cuerpo de Bomberos</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
