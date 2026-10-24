@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { AppLogo, MountainBackground } from '../components/ui/index.js';
 import { apiClient, handleApiError } from '../api/client.js';
-import { ShieldCheck, ArrowRight, AlertCircle, RefreshCw, LogOut } from 'lucide-react';
+import { ShieldCheck, ArrowRight, AlertCircle, RefreshCw, LogOut, Mail, Info } from 'lucide-react';
 
 export const VerifyIdentityPage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -13,15 +13,34 @@ export const VerifyIdentityPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
 
-  // Solicitar envio de codigo OTP (HU-03)
+  // Manejo del temporizador de espera para reenviar
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const interval = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
+
+  // Solicitar envio de codigo OTP por correo (HU-03)
   const handleSolicitarCodigo = async () => {
+    if (cooldown > 0) return;
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsRequestingOtp(true);
     try {
-      await apiClient.post('/api/auth/solicitar-verificacion');
-      setSuccessMessage('Se ha emitido un código de 6 dígitos a su celular y correo.');
+      const response = await apiClient.post<{ data: { codigoSimulado?: string } }>(
+        '/api/auth/solicitar-verificacion'
+      );
+      setSuccessMessage('Se ha enviado un nuevo código de 6 dígitos a tu correo electrónico.');
+      setCooldown(60); // 60 segundos de espera para proteger cuota de envio
+
+      if (response.data?.data?.codigoSimulado) {
+        setSimulatedCode(response.data.data.codigoSimulado);
+      }
     } catch (err) {
       setErrorMessage(handleApiError(err));
     } finally {
@@ -67,11 +86,20 @@ export const VerifyIdentityPage: React.FC = () => {
 
         {/* Contenido Central */}
         <div className="relative z-10 w-full my-auto py-4 space-y-5">
-          <div className="text-center space-y-1.5">
-            <h2 className="text-base font-bold text-white">Verificación Ciudadana</h2>
-            <p className="text-xs text-white/70">
-              Para garantizar la autenticidad de los reportes de emergencia, ingresa el código enviado a tu celular (+591 {user?.telefono}).
+          <div className="text-center space-y-2">
+            <h2 className="text-base font-bold text-white">Verificación de Cuenta</h2>
+            <p className="text-xs text-white/70 leading-relaxed">
+              Para garantizar la autenticidad de tus reportes, ingresa el código de 6 dígitos enviado a tu correo:
             </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/15 text-xs text-emerald-200 font-medium">
+              <Mail className="w-3.5 h-3.5 text-emerald-300" />
+              <span>{user?.email || 'correo registrado'}</span>
+            </div>
+            {user?.telefono && (
+              <p className="text-[11px] text-white/50">
+                Asociado al celular: +591 {user.telefono} · CI: {user.ci || '—'}
+              </p>
+            )}
           </div>
 
           {errorMessage && (
@@ -88,6 +116,22 @@ export const VerifyIdentityPage: React.FC = () => {
             </div>
           )}
 
+          {simulatedCode && (
+            <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] backdrop-blur-md">
+              <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <span>Modo Pruebas / Dev: Código emitido </span>
+                <button
+                  type="button"
+                  onClick={() => setCode(simulatedCode)}
+                  className="font-mono font-bold underline text-white hover:text-amber-300"
+                >
+                  {simulatedCode} (autocompletar)
+                </button>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleVerificarCodigo} className="space-y-4">
             <div className="space-y-1.5">
               <div className="relative border-b border-white/25 focus-within:border-white transition-colors pb-2">
@@ -97,10 +141,13 @@ export const VerifyIdentityPage: React.FC = () => {
                   placeholder="000000"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                  className="w-full bg-transparent text-2xl font-mono text-center tracking-[0.5em] text-white placeholder-white/30 focus:outline-none"
+                  className="w-full bg-transparent text-3xl font-mono text-center tracking-[0.45em] text-white placeholder-white/30 focus:outline-none"
                   autoFocus
                 />
               </div>
+              <p className="text-[11px] text-center text-white/50">
+                El código expira en 15 minutos
+              </p>
             </div>
 
             <button
@@ -117,11 +164,13 @@ export const VerifyIdentityPage: React.FC = () => {
             <button
               type="button"
               onClick={handleSolicitarCodigo}
-              disabled={isRequestingOtp}
-              className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-1.5"
+              disabled={isRequestingOtp || cooldown > 0}
+              className="text-white/70 hover:text-white transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRequestingOtp ? 'animate-spin' : ''}`} />
-              <span>Reenviar Código OTP</span>
+              <span>
+                {cooldown > 0 ? `Reenviar en ${cooldown}s` : 'Reenviar Código'}
+              </span>
             </button>
 
             <button

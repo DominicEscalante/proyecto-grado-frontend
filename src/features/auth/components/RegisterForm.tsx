@@ -179,8 +179,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         )}
       </div>
 
+      {/* Aviso de verificacion OTP */}
+      <p className="text-[11px] text-white/60 text-center leading-relaxed">
+        Te enviaremos un código OTP de 6 dígitos a tu correo electrónico para verificar tu identidad.
+      </p>
+
       {/* Boton Pildora Blanco */}
-      <div className="pt-3">
+      <div className="pt-1">
         <button
           type="submit"
           disabled={isSubmitting}
