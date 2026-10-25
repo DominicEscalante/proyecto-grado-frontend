@@ -5,3 +5,5 @@ export * from './AppLogo.js';
 export * from './MountainBackground.js';
 export * from './SplashScreen.js';
 export * from './select.js';
+export * from './dropdown-menu.js';
+export * from './dialog.js';
