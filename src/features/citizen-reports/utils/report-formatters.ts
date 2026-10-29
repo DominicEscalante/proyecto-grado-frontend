@@ -134,14 +134,16 @@ export function formatBytes(bytes: number): string {
 /**
  * Formatea una fecha ISO a fecha y hora amigable.
  */
-export function formatFechaReporte(fechaIso: string): string {
+export function formatFechaReporte(fechaIso: string | Date | undefined | null): string {
+  if (!fechaIso) return 'Reciente';
   try {
-    const fecha = new Date(fechaIso);
+    const fecha = typeof fechaIso === 'string' ? new Date(fechaIso) : fechaIso;
+    if (isNaN(fecha.getTime())) return String(fechaIso);
     return new Intl.DateTimeFormat('es-BO', {
       dateStyle: 'short',
       timeStyle: 'short',
     }).format(fecha);
   } catch {
-    return fechaIso;
+    return String(fechaIso);
   }
 }

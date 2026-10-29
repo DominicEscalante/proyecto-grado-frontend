@@ -1,18 +1,43 @@
-// Formulario Principal de Reporte de Emergencias segun el Mockup de Diseno
+// Formulario de Reporte de Emergencias: Triage de 1 toque, Etiquetas de contexto rapido y Despacho de Doble Velocidad
+// Exclusivamente con componentes de @heroicons/react y paleta global
 
-import React from 'react';
-import { ChevronsUpDown, Radio, AlertTriangle, Loader2 } from 'lucide-react';
-import { TipoEmergenciaItem, EvidenciaArchivo } from '../types/citizen-reports.types.js';
-import { EvidenceUploader } from './EvidenceUploader.js';
+import React, { useState, useRef } from 'react';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  TruckIcon,
+  ExclamationTriangleIcon,
+  ShieldExclamationIcon,
+  BellAlertIcon,
+  FireIcon,
+  LifebuoyIcon,
+  ExclamationCircleIcon,
+  HeartIcon,
+  CheckIcon,
+  CameraIcon,
+  SignalIcon,
+  ArrowPathIcon,
+  TrashIcon,
+  EyeIcon,
+} from '@heroicons/react/24/outline';
+import {
+  TipoEmergenciaItem,
+  EvidenciaArchivo,
+  InstitucionDestino,
+} from '../types/citizen-reports.types.js';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from '../../../components/ui/index.js';
 
 interface EmergencyReportFormProps {
+  institucion: InstitucionDestino;
   incidentes: TipoEmergenciaItem[];
   tipoEmergenciaId: number;
   indicacionesRapidas: string;
@@ -28,7 +53,76 @@ interface EmergencyReportFormProps {
   onSubmit: () => void;
 }
 
+interface GridOptionDef {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  searchTerms: string[];
+  fallbackId: number;
+}
+
+const POLICIA_OPTIONS: GridOptionDef[] = [
+  {
+    title: 'Accidente de Tránsito',
+    icon: TruckIcon,
+    searchTerms: ['accidente', 'tránsito', 'vehicular'],
+    fallbackId: 1,
+  },
+  {
+    title: 'Robo / Asalto',
+    icon: ExclamationTriangleIcon,
+    searchTerms: ['robo', 'asalto', 'hurto'],
+    fallbackId: 2,
+  },
+  {
+    title: 'Hecho de Violencia',
+    icon: ShieldExclamationIcon,
+    searchTerms: ['violencia', 'riña', 'agresión'],
+    fallbackId: 3,
+  },
+  {
+    title: 'Otra Emergencia',
+    icon: BellAlertIcon,
+    searchTerms: ['otra', 'general', 'policía'],
+    fallbackId: 1,
+  },
+];
+
+const BOMBEROS_OPTIONS: GridOptionDef[] = [
+  {
+    title: 'Incendio Estructural/Vehicular',
+    icon: FireIcon,
+    searchTerms: ['estructural', 'incendio', 'forestal'],
+    fallbackId: 4,
+  },
+  {
+    title: 'Rescate / Auxilio',
+    icon: LifebuoyIcon,
+    searchTerms: ['rescate', 'atrapamiento'],
+    fallbackId: 7,
+  },
+  {
+    title: 'Fuga de Gas / Peligro',
+    icon: ExclamationCircleIcon,
+    searchTerms: ['gas', 'fuga', 'químico'],
+    fallbackId: 6,
+  },
+  {
+    title: 'Emergencia Médica',
+    icon: HeartIcon,
+    searchTerms: ['médica', 'derrumbe', 'deslizamiento', 'inundación'],
+    fallbackId: 8,
+  },
+];
+
+const QUICK_TAGS = [
+  'Hay heridos',
+  'Peligro en curso',
+  'Vía bloqueada',
+  'Personas atrapadas',
+];
+
 export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
+  institucion,
   incidentes,
   tipoEmergenciaId,
   indicacionesRapidas,
@@ -40,120 +134,348 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
   onChangeIndicaciones,
   onAdjuntarEvidencias,
   onRemoverEvidencia,
-  onReemplazarEvidencia,
   onSubmit,
 }) => {
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [manualNotes, setManualNotes] = useState<string>(indicacionesRapidas || '');
+  const [selectedForView, setSelectedForView] = useState<EvidenciaArchivo | null>(null);
+
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Opciones de la cuadricula segun institucion
+  const gridOptions = institucion === 'POLICIA' ? POLICIA_OPTIONS : BOMBEROS_OPTIONS;
+
+  // Resolver ID real de la base de datos para cada opcion del grid
+  const resolveOptionId = (opt: GridOptionDef): number => {
+    const match = incidentes.find((inc) => {
+      const nombreLower = inc.nombre.toLowerCase();
+      return opt.searchTerms.some((term) => nombreLower.includes(term));
+    });
+    return match ? Number(match.tipoEmergenciaId || match.id) : opt.fallbackId;
+  };
+
+  // Incidente seleccionado actualmente para mostrar su descripcion breve
+  const selectedIncident = incidentes.find(
+    (inc) => (inc.tipoEmergenciaId || inc.id) === tipoEmergenciaId
+  );
+
+  // Alternar tag rapido y sincronizar inmediatamente con el texto de indicaciones
+  const handleToggleTag = (tag: string) => {
+    if (isSubmitting) return;
+    const exists = selectedTags.includes(tag);
+    const updatedTags = exists
+      ? selectedTags.filter((t) => t !== tag)
+      : [...selectedTags, tag];
+
+    setSelectedTags(updatedTags);
+
+    const prefix = updatedTags.length > 0 ? updatedTags.map((t) => `[${t}]`).join(' ') : '';
+    const fullText = prefix
+      ? (manualNotes ? `${prefix} - ${manualNotes}` : prefix)
+      : manualNotes;
+
+    onChangeIndicaciones(fullText);
+  };
+
+  // Manejar edicion manual del textarea
+  const handleManualNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setManualNotes(val);
+
+    const prefix = selectedTags.length > 0 ? selectedTags.map((t) => `[${t}]`).join(' ') : '';
+    const fullText = prefix ? (val ? `${prefix} - ${val}` : prefix) : val;
+    onChangeIndicaciones(fullText);
+  };
+
+  // Triggers de carga de fotos
+  const handleTriggerCamera = () => {
+    if (isSubmitting) return;
+    cameraInputRef.current?.click();
+  };
+
+  const handleTriggerGallery = () => {
+    if (isSubmitting) return;
+    galleryInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onAdjuntarEvidencias(files);
+    }
+    e.target.value = '';
+  };
+
   return (
     <div className="w-full space-y-3">
-      {/* Tarjeta Contenedora Principal (Mockup) */}
+      {/* Inputs ocultos de carga multimedia */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        disabled={isSubmitting}
+        onChange={handleFileChange}
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,video/mp4"
+        className="hidden"
+        disabled={isSubmitting}
+        onChange={handleFileChange}
+      />
+
+      {/* Tarjeta Contenedora Principal */}
       <div className="w-full bg-white rounded-2xl border border-stone-200/90 p-3.5 sm:p-4 shadow-2xs space-y-3.5">
-        {/* 1. Selector de Tipo de Incidente (Componente Shadcn Combobox / Select) */}
-        <div className="space-y-1">
-          <label className="block text-xs font-bold text-stone-800 tracking-tight">
-            Tipo de Incidente
-          </label>
+        {/* PASO 2: Tipo de Incidente en Grid de 1 Toque (Cuadricula 2x2) */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-stone-800 tracking-tight">
+              Tipo de Incidente
+            </label>
+            <span className="text-[10px] text-stone-400 font-medium">
+              1 Toque
+            </span>
+          </div>
 
-          <Select
-            value={tipoEmergenciaId ? String(tipoEmergenciaId) : undefined}
-            onValueChange={(val) => onSelectTipoEmergencia(Number(val))}
-            disabled={isSubmitting}
-          >
-            <SelectTrigger
-              icon={<ChevronsUpDown className="w-4 h-4 text-stone-500 stroke-[2.5]" />}
-              className="w-full h-11 bg-[#F1F5F9] hover:bg-[#E2E8F0]/80 border-stone-300 text-stone-900 text-xs sm:text-sm font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-[#143601]/20 focus:border-[#143601] transition-colors cursor-pointer shadow-2xs"
-            >
-              <SelectValue placeholder="Selecciona el tipo de incidente" />
-            </SelectTrigger>
+          <div className="grid grid-cols-2 gap-2.5">
+            {gridOptions.map((opt) => {
+              const optId = resolveOptionId(opt);
+              const isSelected = tipoEmergenciaId === optId;
+              const IconComp = opt.icon;
 
-            <SelectContent className="max-h-72 rounded-xl bg-white border border-stone-200 shadow-xl p-1 z-50">
-              {incidentes.map((item) => {
-                const itemKey = item.tipoEmergenciaId || item.id;
-                return (
-                  <SelectItem
-                    key={itemKey}
-                    value={String(itemKey)}
-                    className="rounded-lg py-2 pl-8 pr-3 text-xs sm:text-sm font-semibold text-stone-800 focus:bg-stone-100 focus:text-[#143601] cursor-pointer"
-                  >
-                    {item.nombre}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+              return (
+                <button
+                  key={opt.title}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => onSelectTipoEmergencia(optId)}
+                  className={`p-3 rounded-xl flex flex-col items-start justify-center transition-all select-none cursor-pointer text-left ${
+                    isSelected
+                      ? 'border-2 border-[#143601] bg-emerald-50/70 text-[#143601] shadow-2xs ring-1 ring-[#143601]/20 font-bold'
+                      : 'border border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50 font-medium'
+                  }`}
+                >
+                  <IconComp
+                    className={`w-5 h-5 mb-1.5 ${
+                      isSelected ? 'text-[#143601] stroke-[2.2]' : 'text-stone-500 stroke-[1.8]'
+                    }`}
+                  />
+                  <span className="text-xs leading-tight tracking-tight">
+                    {opt.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-          {/* Breve descripcion del incidente seleccionado */}
-          {(() => {
-            const seleccionado = incidentes.find(
-              (i) => (i.tipoEmergenciaId || i.id) === tipoEmergenciaId
-            );
-            return seleccionado?.descripcion ? (
-              <p className="text-[11px] text-stone-500 pt-0.5 leading-tight">
-                {seleccionado.descripcion}
-              </p>
-            ) : null;
-          })()}
+          {/* Linea discreta con la descripcion del incidente seleccionado */}
+          {selectedIncident?.descripcion && (
+            <p className="text-[11px] text-stone-600 pt-0.5 leading-tight flex items-center gap-1.5 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#143601] shrink-0" />
+              <span className="truncate">{selectedIncident.descripcion}</span>
+            </p>
+          )}
         </div>
 
-        {/* 2. Seccion de Evidencias Multimedia */}
-        <EvidenceUploader
-          evidencias={evidencias}
-          onAdjuntar={onAdjuntarEvidencias}
-          onRemover={onRemoverEvidencia}
-          onReemplazar={onReemplazarEvidencia}
-          disabled={isSubmitting}
-        />
+        {/* PASO 3: Contexto Rapido y Evidencia (Opcional - Patron Doble Velocidad) */}
+        <div className="space-y-2 pt-1 border-t border-stone-100">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-stone-800 tracking-tight">
+              Evidencia y Contexto (Opcional)
+            </label>
+            <span className="text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full font-medium">
+              Opcional · No detiene el envío SOS
+            </span>
+          </div>
 
-        {/* 3. Indicaciones Rapidas (Texto abierto) */}
-        <div className="space-y-1">
-          <label
-            htmlFor="indicaciones-rapidas"
-            className="block text-xs font-bold text-stone-800 tracking-tight"
-          >
-            Indicaciones Rapidas
-          </label>
+          {/* Pildoras de Situacion de 1 Toque (Quick-Tags sin teclear) */}
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_TAGS.map((tag) => {
+              const isActive = selectedTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleToggleTag(tag)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all select-none cursor-pointer flex items-center gap-1 ${
+                    isActive
+                      ? 'bg-emerald-100/90 border border-emerald-300 text-[#143601] shadow-2xs'
+                      : 'bg-white border border-stone-200 text-stone-700 hover:border-stone-300 hover:bg-stone-50'
+                  }`}
+                >
+                  {isActive ? (
+                    <CheckIcon className="w-3.5 h-3.5 text-[#143601] stroke-[2.5]" />
+                  ) : (
+                    <span className="text-stone-400 font-bold">+</span>
+                  )}
+                  <span>{tag}</span>
+                </button>
+              );
+            })}
+          </div>
 
-          <textarea
-            id="indicaciones-rapidas"
-            rows={2}
-            disabled={isSubmitting}
-            value={indicacionesRapidas}
-            onChange={(e) => onChangeIndicaciones(e.target.value)}
-            placeholder="Ej: Incendio de una casa"
-            className="w-full bg-[#F1F5F9] hover:bg-[#E2E8F0]/80 focus:bg-white border border-stone-200 text-stone-900 text-xs sm:text-sm rounded-xl p-2.5 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#143601]/20 focus:border-[#143601] transition-all resize-none disabled:opacity-50"
-          />
+          {/* Bloque Horizontal Compacto: Foto (col-4) + Textarea (col-8) */}
+          <div className="grid grid-cols-12 gap-2.5 items-stretch pt-1">
+            {/* Columna Izquierda: Adjuntar Foto */}
+            <div className="col-span-4 flex flex-col justify-stretch">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    className={`w-full h-full min-h-[76px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-2 transition-all cursor-pointer select-none group ${
+                      evidencias.length > 0
+                        ? 'border-[#143601] bg-emerald-50/50 text-[#143601]'
+                        : 'border-stone-300 hover:border-[#143601] bg-stone-50/70 hover:bg-stone-100/60 text-stone-600 hover:text-[#143601]'
+                    }`}
+                  >
+                    {evidencias.length > 0 && evidencias[0].tipo === 'image' ? (
+                      <div className="relative w-7 h-7 rounded-md overflow-hidden mb-1 border border-[#143601]/40">
+                        <img
+                          src={evidencias[0].previewUrl}
+                          alt="Evidencia"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <CameraIcon className="w-5 h-5 mb-1 group-hover:scale-110 transition-transform stroke-[1.8]" />
+                    )}
+
+                    <span className="text-[10px] font-bold text-center leading-tight">
+                      {evidencias.length > 0
+                        ? `${evidencias.length} ${evidencias.length === 1 ? 'Foto' : 'Fotos'}`
+                        : 'Adjuntar Foto'}
+                    </span>
+                    <span className="text-[9px] text-stone-400 text-center leading-tight">
+                      {evidencias.length > 0 ? 'Toca p/ ver' : 'Cámara/Galería'}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={4}
+                  className="w-48 rounded-xl bg-white border border-stone-200 shadow-xl p-1 z-50 animate-fadeIn"
+                >
+                  <DropdownMenuItem
+                    onClick={handleTriggerCamera}
+                    className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-stone-800 hover:bg-stone-100 cursor-pointer"
+                  >
+                    <CameraIcon className="w-4 h-4 text-[#143601] stroke-[2]" />
+                    <span>Tomar foto (Cámara)</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={handleTriggerGallery}
+                    className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-stone-800 hover:bg-stone-100 cursor-pointer"
+                  >
+                    <EyeIcon className="w-4 h-4 text-[#143601] stroke-[2]" />
+                    <span>Subir de la galería</span>
+                  </DropdownMenuItem>
+
+                  {evidencias.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator className="my-1 bg-stone-100" />
+                      <DropdownMenuItem
+                        onClick={() => setSelectedForView(evidencias[0])}
+                        className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-stone-800 hover:bg-stone-100 cursor-pointer"
+                      >
+                        <EyeIcon className="w-4 h-4 text-stone-600 stroke-[2]" />
+                        <span>Ver foto actual</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => onRemoverEvidencia(evidencias[0].id)}
+                        className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer"
+                      >
+                        <TrashIcon className="w-4 h-4 text-rose-600 stroke-[2]" />
+                        <span>Quitar foto</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Columna Derecha: Indicaciones Rapidas Textarea */}
+            <div className="col-span-8 flex flex-col justify-stretch">
+              <textarea
+                id="indicaciones-rapidas"
+                rows={2}
+                disabled={isSubmitting}
+                value={manualNotes}
+                onChange={handleManualNotesChange}
+                placeholder="Calle de referencia, color de vehículo o detalles..."
+                className="w-full h-full min-h-[76px] p-2 text-xs text-stone-800 bg-stone-50/60 focus:bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#143601]/20 focus:border-[#143601] placeholder:text-stone-400 resize-none transition-colors leading-relaxed"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Banner de Mensaje de Error */}
       {errorMessage && (
         <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2 text-rose-800 text-xs">
-          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+          <ExclamationTriangleIcon className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
           <p className="font-medium leading-tight">{errorMessage}</p>
         </div>
       )}
 
-      {/* 4. Boton Enviar Alerta SOS (Mockup) */}
-      <button
-        type="button"
-        disabled={isSubmitting}
-        onClick={onSubmit}
-        className="w-full py-3 px-4 rounded-xl bg-[#d9534f] hover:bg-[#c9302c] active:scale-[0.98] text-white font-black text-sm sm:text-base tracking-wider uppercase flex items-center justify-center gap-2 shadow-md shadow-red-500/20 transition-all select-none disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span>{submittingStep || 'Despachando SOS...'}</span>
-          </>
-        ) : (
-          <>
-            {/* Icono de Antena / Radio de Emergencia del Mockup */}
-            <div className="relative flex items-center justify-center">
-              <Radio className="w-5 h-5 stroke-[2.5]" />
+      {/* PASO 5: Boton de Accion Critica (SOS Inmediato) */}
+      <div className="space-y-1.5 pt-1">
+        <button
+          type="button"
+          disabled={isSubmitting}
+          onClick={onSubmit}
+          className="w-full h-14 bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-red-400 text-white font-black text-base sm:text-lg tracking-wider uppercase rounded-xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2.5 cursor-pointer select-none"
+        >
+          {isSubmitting ? (
+            <>
+              <ArrowPathIcon className="w-6 h-6 animate-spin text-white" />
+              <span>{submittingStep || 'Despachando SOS...'}</span>
+            </>
+          ) : (
+            <>
+              <SignalIcon className="w-6 h-6 stroke-[2.4] animate-pulse text-white" />
+              <span>ENVIAR ALERTA SOS</span>
+            </>
+          )}
+        </button>
+
+        <p className="text-[11px] text-stone-500 text-center font-medium leading-tight select-none">
+          Despacho inmediato con tu ubicación GPS actual
+        </p>
+      </div>
+
+      {/* Dialog para Visualizar la Foto */}
+      {selectedForView && (
+        <Dialog open={!!selectedForView} onOpenChange={(open) => !open && setSelectedForView(null)}>
+          <DialogContent className="max-w-sm p-4 rounded-2xl bg-white border border-stone-200 shadow-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+                <CameraIcon className="w-4 h-4 text-[#143601]" />
+                <span>Foto de Evidencia</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-stone-500 font-mono truncate">
+                {selectedForView.file.name} · {selectedForView.tamanoFormateado}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-2 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 flex items-center justify-center max-h-[60vh]">
+              <img
+                src={selectedForView.previewUrl}
+                alt={selectedForView.file.name}
+                className="w-full h-auto max-h-[55vh] object-contain"
+              />
             </div>
-            <span>Enviar Alerta SOS</span>
-          </>
-        )}
-      </button>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

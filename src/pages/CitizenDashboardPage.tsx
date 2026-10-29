@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   CitizenHeader,
   InstitutionSelector,
-  GpsStatusBar,
   EmergencyReportForm,
   ReportSuccessModal,
   CitizenBottomNav,
@@ -38,26 +37,27 @@ export const CitizenDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#F4F7F4] text-[#143601] flex flex-col justify-between selection:bg-[#143601] selection:text-white">
-      {/* 1. Encabezado Superior Institucional */}
-      <CitizenHeader onGoHome={() => setActiveTab('reportar')} />
+      {/* 1. Header Compacto con Estado GPS Integrado */}
+      <CitizenHeader
+        gps={gps}
+        onGoHome={() => setActiveTab('reportar')}
+      />
 
-      {/* 2. Contenedor Principal Optimizado para Vista Movil */}
-      <main className="flex-1 w-full max-w-md mx-auto px-3.5 sm:px-4 py-2.5 sm:py-4">
-        {/* Pestana 1: Envio de Reporte SOS (Mockup) */}
+      {/* 2. Contenedor Principal Ergonomico Mobile-First */}
+      <main className="flex-1 w-full max-w-md mx-auto px-3.5 sm:px-4 py-2 sm:py-3">
+        {/* Pestana 1: Envio de Reporte SOS (Triage de 1 toque, Quick-Tags y Despacho Doble Velocidad) */}
         {activeTab === 'reportar' && (
-          <div className="space-y-2.5 pb-20 animate-fadeIn">
-            {/* Selector de Institucion Destino: Policia / Bomberos */}
+          <div className="space-y-3 pb-20 animate-fadeIn">
+            {/* Paso 1: Selector de Institucion de Alto Contraste (2 Columnas) */}
             <InstitutionSelector
               selected={institucion}
               onSelect={cambiarInstitucion}
               disabled={isSubmitting}
             />
 
-            {/* Banner de Sincronizacion GPS */}
-            <GpsStatusBar gps={gps} />
-
-            {/* Formulario Principal de Incidente y Evidencias */}
+            {/* Paso 2, 3 y Boton SOS: Formulario de Incidente, Contexto Rapido y Despacho Critico */}
             <EmergencyReportForm
+              institucion={institucion}
               incidentes={incidentesFiltrados}
               tipoEmergenciaId={tipoEmergenciaId}
               indicacionesRapidas={indicacionesRapidas}

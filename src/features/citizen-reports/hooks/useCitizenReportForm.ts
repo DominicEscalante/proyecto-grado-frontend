@@ -6,6 +6,7 @@ import {
   TipoEmergenciaItem,
   EvidenciaArchivo,
   ReporteCreadoResult,
+  ReporteCiudadanoResumen,
 } from '../types/citizen-reports.types.js';
 import {
   getCatalogoEmergenciasApi,
@@ -255,6 +256,33 @@ export function useCitizenReportForm() {
         ...reporteCreado,
         tipoEmergenciaNombre: incidenteSeleccionado.nombre,
       });
+
+      // 8. Guardar en cache local persistente para visualizacion inmediata en "Mis Alertas"
+      try {
+        const nuevoResumen: ReporteCiudadanoResumen = {
+          reporteId: reporteCreado.reporteId,
+          codigoTicket: reporteCreado.codigoTicket,
+          estado: (reporteCreado.estado as ReporteCiudadanoResumen['estado']) || 'PENDIENTE',
+          institucionDestino: institucion,
+          tipoEmergencia: incidenteSeleccionado.nombre,
+          descripcion: descripcionFinal,
+          fechaRegistro: new Date().toISOString(),
+          latitud: payload.latitud,
+          longitud: payload.longitud,
+          adjuntosCount: evidencias.length,
+        };
+
+        const almacenadosStr = localStorage.getItem('ampar_mis_reportes');
+        const previos: ReporteCiudadanoResumen[] = almacenadosStr ? JSON.parse(almacenadosStr) : [];
+        const actualizados = [
+          nuevoResumen,
+          ...previos.filter((p) => p.codigoTicket !== nuevoResumen.codigoTicket),
+        ];
+        localStorage.setItem('ampar_mis_reportes', JSON.stringify(actualizados));
+        window.dispatchEvent(new CustomEvent('ampar_reporte_creado', { detail: nuevoResumen }));
+      } catch (cacheErr) {
+        console.warn('No se pudo guardar reporte en caché local:', cacheErr);
+      }
 
       // Limpiar formulario para proximo envio
       setIndicacionesRapidas('');

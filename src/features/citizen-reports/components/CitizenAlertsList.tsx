@@ -118,7 +118,7 @@ export const CitizenAlertsList: React.FC<CitizenAlertsListProps> = ({ onNuevoRep
       <div className="space-y-3">
         {reportes.map((rep) => (
           <div
-            key={rep.reporteId}
+            key={rep.codigoTicket || rep.reporteId}
             className="p-4 rounded-2xl bg-white border border-stone-200 shadow-xs hover:border-stone-300 transition-all space-y-2.5"
           >
             <div className="flex items-center justify-between">
@@ -140,7 +140,9 @@ export const CitizenAlertsList: React.FC<CitizenAlertsListProps> = ({ onNuevoRep
                   {rep.institucionDestino}
                 </span>
                 <span className="text-xs font-bold text-stone-800 truncate">
-                  {rep.tipoEmergencia}
+                  {typeof rep.tipoEmergencia === 'object' && rep.tipoEmergencia !== null
+                    ? (rep.tipoEmergencia as { nombre?: string }).nombre
+                    : rep.tipoEmergencia}
                 </span>
               </div>
 

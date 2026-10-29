@@ -98,11 +98,55 @@ export async function getMisReportesApi(
 ): Promise<{ reportes: ReporteCiudadanoResumen[]; total: number }> {
   try {
     const response = await apiClient.get<
-      ApiResponse<{ reportes: ReporteCiudadanoResumen[]; total: number }>
+      ApiResponse<{
+        items?: Record<string, unknown>[];
+        reportes?: Record<string, unknown>[];
+        total?: number;
+      }>
     >('/api/ciudadano/reportes', {
       params: { pagina, limite },
     });
-    return response.data.data || { reportes: [], total: 0 };
+
+    const dataObj = response.data?.data;
+    const rawList: Record<string, unknown>[] = Array.isArray(dataObj?.items)
+      ? dataObj.items
+      : Array.isArray(dataObj?.reportes)
+      ? dataObj.reportes
+      : Array.isArray(dataObj)
+      ? (dataObj as unknown as Record<string, unknown>[])
+      : [];
+
+    const reportesNormalizados: ReporteCiudadanoResumen[] = rawList.map((raw) => {
+      let nombreTipo = 'Emergencia';
+      if (typeof raw.tipoEmergencia === 'object' && raw.tipoEmergencia !== null) {
+        nombreTipo = String((raw.tipoEmergencia as { nombre?: string }).nombre || 'Emergencia');
+      } else if (typeof raw.tipoEmergencia === 'string' && raw.tipoEmergencia.trim()) {
+        nombreTipo = raw.tipoEmergencia;
+      } else if (typeof raw.tipoEmergenciaNombre === 'string' && raw.tipoEmergenciaNombre.trim()) {
+        nombreTipo = raw.tipoEmergenciaNombre;
+      }
+
+      return {
+        reporteId: Number(raw.reporteId) || 0,
+        codigoTicket: String(raw.codigoTicket || ''),
+        estado: (raw.estado as ReporteCiudadanoResumen['estado']) || 'PENDIENTE',
+        institucionDestino: (raw.institucionDestino as ReporteCiudadanoResumen['institucionDestino']) || 'POLICIA',
+        tipoEmergencia: nombreTipo,
+        descripcion: String(raw.descripcion || ''),
+        fechaRegistro: String(
+          raw.fechaGeneracionLocal || raw.fechaRegistro || raw.actualizadoEn || new Date().toISOString()
+        ),
+        latitud: Number(raw.latitud) || 0,
+        longitud: Number(raw.longitud) || 0,
+        adjuntosCount: Number(raw.totalAdjuntos ?? raw.adjuntosCount ?? 0),
+        primerAdjuntoUrl: (raw.primerAdjuntoUrl as string) || null,
+      };
+    });
+
+    return {
+      reportes: reportesNormalizados,
+      total: typeof dataObj?.total === 'number' ? dataObj.total : reportesNormalizados.length,
+    };
   } catch (error) {
     throw new Error(handleApiError(error));
   }
