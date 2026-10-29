@@ -4,7 +4,6 @@ import { apiClient } from '../../../api/client.js';
 import {
   IncidenteInstitucional,
   EstadoIncidente,
-  ZonaCalor,
 } from '../types/institution-reports.types.js';
 
 // Datos iniciales de contingencia basados en la maqueta operativa de La Paz
@@ -190,21 +189,6 @@ const INCIDENTES_MOCK: IncidenteInstitucional[] = [
       hora: '13:20',
       responsable: 'Operador-01',
     },
-  },
-];
-
-export const ZONAS_CALOR_LA_PAZ: ZonaCalor[] = [
-  {
-    latitud: -16.5000,
-    longitud: -68.1500,
-    radioMetros: 1400,
-    intensidad: 'ALTA',
-  },
-  {
-    latitud: -16.5080,
-    longitud: -68.1320,
-    radioMetros: 2200,
-    intensidad: 'MEDIA',
   },
 ];
 

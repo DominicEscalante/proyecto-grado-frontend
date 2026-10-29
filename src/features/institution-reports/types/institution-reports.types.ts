@@ -62,5 +62,6 @@ export interface ZonaCalor {
   latitud: number;
   longitud: number;
   radioMetros: number;
+  cantidadReportes: number;
   intensidad: 'ALTA' | 'MEDIA';
 }

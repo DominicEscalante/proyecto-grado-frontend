@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { FireIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import L from 'leaflet';
 import { IncidenteInstitucional } from '../types/institution-reports.types.js';
-import { ZONAS_CALOR_LA_PAZ } from '../api/institution-reports.api.js';
+import { buildHeatZones } from '../utils/heat-zones.js';
 
 interface UseMapIncidentMarkersOptions {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -95,7 +95,7 @@ export function useMapIncidentMarkers({
     tileLayerRef.current = newTileLayer;
   }, [mapStyle]);
 
-  // Actualizacion de zonas de calor (circulos de densidad)
+  // Derive hotspot zones from the current reports instead of static city-wide circles.
   useEffect(() => {
     if (!mapRef.current || !heatLayerRef.current) return;
 
@@ -104,8 +104,7 @@ export function useMapIncidentMarkers({
 
     if (!showHeatmap) return;
 
-    // Zonas de calor visuales con gradiente sutil
-    ZONAS_CALOR_LA_PAZ.forEach((zona) => {
+    buildHeatZones(incidents).forEach((zona) => {
       const isAlta = zona.intensidad === 'ALTA';
       const color = isBomberos ? (isAlta ? '#d91e36' : '#ef7674') : (isAlta ? '#dc2626' : '#d97706');
       const fillColor = isBomberos ? (isAlta ? '#d91e36' : '#ef7674') : (isAlta ? '#dc2626' : '#f59e0b');
@@ -114,14 +113,18 @@ export function useMapIncidentMarkers({
         radius: zona.radioMetros,
         color: color,
         weight: 1.25,
-        opacity: 0.28,
+        opacity: 0.5,
         fillColor: fillColor,
-        fillOpacity: isAlta ? 0.13 : 0.07,
+        fillOpacity: isAlta ? 0.24 : 0.14,
       });
 
+      circle.bindTooltip(
+        `${zona.cantidadReportes} reportes próximos`,
+        { direction: 'top', sticky: true }
+      );
       circle.addTo(layer);
     });
-  }, [showHeatmap, isBomberos]);
+  }, [incidents, showHeatmap, isBomberos]);
 
   // Actualizacion de marcadores en el mapa
   useEffect(() => {
