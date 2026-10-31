@@ -11,12 +11,12 @@ export function useLogin() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLoginSubmit = async (values: LoginFormValues) => {
+  const handleLoginSubmit = async (values: LoginFormValues, rememberSession = true) => {
     setErrorMessage(null);
     setIsSubmitting(true);
 
     try {
-      const user = await login(values);
+      const user = await login(values, rememberSession);
 
       sileo.success({
         title: 'Inicio de sesión exitoso',

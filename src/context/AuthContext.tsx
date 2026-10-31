@@ -12,7 +12,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<User>;
+  login: (credentials: LoginCredentials, rememberSession?: boolean) => Promise<User>;
   register: (data: RegisterCitizenData) => Promise<User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -26,19 +26,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     async function initAuth() {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
       if (token) {
         try {
           const { user: fetchedUser } = await getCurrentUserRequest();
           setUser(fetchedUser);
-          localStorage.setItem('auth_user', JSON.stringify(fetchedUser));
+          (localStorage.getItem('auth_token') ? localStorage : sessionStorage).setItem('auth_user', JSON.stringify(fetchedUser));
         } catch {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('auth_user');
+          sessionStorage.removeItem('auth_token');
+          sessionStorage.removeItem('auth_user');
           setUser(null);
         }
       } else {
-        const cachedUser = localStorage.getItem('auth_user');
+        const cachedUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
         if (cachedUser) {
           try {
             setUser(JSON.parse(cachedUser));
@@ -57,15 +59,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  const login = async (credentials: LoginCredentials): Promise<User> => {
+  const login = async (credentials: LoginCredentials, rememberSession = true): Promise<User> => {
     setIsLoading(true);
     try {
       const result = await loginRequest(credentials);
       const token = result.token || (result.session as any)?.token;
+      const storage = rememberSession ? localStorage : sessionStorage;
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      sessionStorage.removeItem('auth_token');
+      sessionStorage.removeItem('auth_user');
       if (token) {
-        localStorage.setItem('auth_token', token);
+        storage.setItem('auth_token', token);
       }
-      localStorage.setItem('auth_user', JSON.stringify(result.user));
+      storage.setItem('auth_user', JSON.stringify(result.user));
       setUser(result.user);
       return result.user;
     } finally {

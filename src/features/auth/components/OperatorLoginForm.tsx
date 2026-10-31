@@ -22,7 +22,7 @@ export const OperatorLoginForm: React.FC = () => {
   });
 
   return (
-    <form onSubmit={handleSubmit(handleLoginSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit((values) => handleLoginSubmit(values))} className="space-y-5">
       {errorMessage && (
         <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs backdrop-blur-md">
           <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />

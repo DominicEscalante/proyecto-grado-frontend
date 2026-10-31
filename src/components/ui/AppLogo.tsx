@@ -11,9 +11,7 @@ export interface AppLogoProps {
 }
 
 /**
- * Logotipo oficial de AMPAR: Sistema de Respuesta y Emergencias.
- * Simboliza la union indisoluble entre Policia, Bomberos y Ciudadania.
- * Trazo en color parametrizable (por defecto #ffffff de alto contraste).
+ * Isotipo Enlace de AMPAR: coordinacion entre equipos de respuesta.
  */
 export const AppLogo: React.FC<AppLogoProps> = ({
   className = '',
@@ -33,35 +31,25 @@ export const AppLogo: React.FC<AppLogoProps> = ({
         style={{ width: size, height: size }}
       >
         <svg
-          viewBox="0 0 100 100"
+          viewBox="60 80 208 192"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-full drop-shadow-xs"
+          role="img"
+          aria-label="Logo AMPAR, enlace de equipos de respuesta"
         >
-          {/* Lazo Izquierdo: Ciudadano y Alerta */}
           <path
-            d="M38 32 C23 32, 14 41, 14 51 C14 62, 23 70, 37 70 C48 70, 55 62, 60 55 C65 48, 72 40, 83 40 C91 40, 96 45, 96 52"
+            d="M80 176c24-40 52-60 84-60s60 20 84 60c-24 40-52 60-84 60s-60-20-84-60z"
             stroke={color}
-            strokeWidth="7"
+            strokeWidth="14"
+          />
+          <path
+            d="M95 210c32-48 65-72 99-72 17 0 35 6 53 18"
+            stroke={color === '#ffffff' ? '#aad576' : '#538d22'}
+            strokeWidth="13"
             strokeLinecap="round"
           />
-
-          {/* Lazo Derecho: Proteccion Policial y Rescate Bomberos */}
-          <path
-            d="M62 68 C77 68, 86 59, 86 49 C86 38, 77 30, 63 30 C52 30, 45 38, 40 45 C35 52, 28 60, 17 60 C9 60, 4 55, 4 48"
-            stroke={color}
-            strokeWidth="7"
-            strokeLinecap="round"
-          />
-
-          {/* Vertice Central: Escudo y Llama fusionados */}
-          <path
-            d="M50 16 C53 23, 58 28, 58 33 C58 38, 54 41, 50 41 C46 41, 42 38, 42 33 C42 28, 47 23, 50 16 Z"
-            fill={color}
-          />
-
-          {/* Nucleo Central */}
-          <circle cx="50" cy="50" r="4.5" fill={color} />
+          <circle cx="164" cy="176" r="17" fill={color === '#ffffff' ? '#aad576' : '#538d22'} />
         </svg>
       </div>
 

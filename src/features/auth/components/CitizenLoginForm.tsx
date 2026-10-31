@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import {
+  ArrowRightOnRectangleIcon,
+  EnvelopeIcon,
+  ExclamationCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  LockClosedIcon,
+} from '@heroicons/react/24/outline';
 import { loginSchema, LoginFormValues } from '../utils/auth.validators.js';
 import { useLogin } from '../hooks/useLogin.js';
 
@@ -12,139 +19,75 @@ export interface LoginFormProps {
 
 export const CitizenLoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberSession, setRememberSession] = useState(false);
+  const [showRecoveryHelp, setShowRecoveryHelp] = useState(false);
   const { handleLoginSubmit, errorMessage, isSubmitting } = useLogin();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      identificador: '',
-      password: '',
-    },
+    defaultValues: { identificador: '', password: '' },
   });
 
   return (
-    <form onSubmit={handleSubmit(handleLoginSubmit)} className="w-full space-y-7">
+    <form onSubmit={handleSubmit((values) => handleLoginSubmit(values, rememberSession))} className="w-full space-y-5" noValidate>
       {errorMessage && (
-        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs backdrop-blur-md animate-fadeIn">
-          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+        <div role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          <ExclamationCircleIcon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
-      {/* Input Identificador (Celular, CI o Correo) - Linea minimalista sobre fondo oscuro */}
-      <div className="space-y-1.5">
-        <div className="relative border-b border-white/25 focus-within:border-white transition-colors pb-2">
-          <input
-            id="identificador"
-            type="text"
-            placeholder="Número de celular, CI o correo"
-            className="w-full bg-transparent text-sm sm:text-base text-white placeholder-white/50 focus:outline-none tracking-wide text-center"
-            autoComplete="username"
-            {...register('identificador')}
-          />
+      <div>
+        <label htmlFor="identificador" className="mb-1.5 block text-xs font-semibold text-stone-700">Correo institucional o Cédula de Identidad (CI)</label>
+        <div className="relative">
+          <EnvelopeIcon className="pointer-events-none absolute left-3.5 top-3 h-5 w-5 text-stone-400" aria-hidden="true" />
+          <input id="identificador" type="text" autoComplete="username" placeholder="ej. operador@policia.bo o CI"
+            aria-invalid={!!errors.identificador} aria-describedby={errors.identificador ? 'identificador-error' : undefined}
+            className="h-11 w-full rounded-lg border border-stone-200 bg-white pl-11 pr-3 text-sm text-slate-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            {...register('identificador')} />
         </div>
-        {errors.identificador && (
-          <p className="text-[11px] text-center font-medium text-red-300 pt-0.5">
-            {errors.identificador.message}
-          </p>
-        )}
+        {errors.identificador && <p id="identificador-error" className="mt-1.5 text-xs text-red-700">{errors.identificador.message}</p>}
       </div>
 
-      {/* Input Contrasena - Linea minimalista sobre fondo oscuro */}
-      <div className="space-y-1.5">
-        <div className="relative border-b border-white/25 focus-within:border-white transition-colors pb-2 flex items-center">
-          <input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Contraseña"
-            className="w-full bg-transparent text-sm sm:text-base text-white placeholder-white/50 focus:outline-none tracking-wide text-center pl-7 pr-7"
-            autoComplete="current-password"
-            {...register('password')}
-          />
-          <button
-            type="button"
-            tabIndex={-1}
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-1 text-white/50 hover:text-white transition-colors focus:outline-none"
-          >
-            {showPassword ? (
-              <EyeOff className="w-4 h-4" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
+      <div>
+        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+          <label htmlFor="password" className="text-xs font-semibold text-stone-700">Contraseña</label>
+          <button type="button" onClick={() => setShowRecoveryHelp((visible) => !visible)} aria-expanded={showRecoveryHelp} aria-controls="recovery-help" className="text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline">¿Olvidaste tu contraseña?</button>
+        </div>
+        {showRecoveryHelp && <p id="recovery-help" className="mb-2 rounded-lg bg-emerald-50 p-3 text-xs leading-5 text-emerald-900">Solicita el restablecimiento de tu contraseña al Administrador de Red de tu institución.</p>}
+        <div className="relative">
+          <LockClosedIcon className="pointer-events-none absolute left-3.5 top-3 h-5 w-5 text-stone-400" aria-hidden="true" />
+          <input id="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Ingresa tu contraseña"
+            aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined}
+            className="h-11 w-full rounded-lg border border-stone-200 bg-white pl-11 pr-11 text-sm text-slate-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            {...register('password')} />
+          <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword}
+            className="absolute right-3 top-2.5 cursor-pointer rounded p-0.5 text-stone-400 hover:text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-600">
+            {showPassword ? <EyeSlashIcon className="h-5 w-5" aria-hidden="true" /> : <EyeIcon className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
-        {errors.password && (
-          <p className="text-[11px] text-center font-medium text-red-300 pt-0.5">
-            {errors.password.message}
-          </p>
-        )}
+        {errors.password && <p id="password-error" className="mt-1.5 text-xs text-red-700">{errors.password.message}</p>}
       </div>
 
-      {/* Boton Pildora Blanco Prominente (Identico al diseno de referencia) */}
-      <div className="pt-2">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-4 px-6 rounded-full bg-white text-[#143601] text-base font-semibold tracking-wide shadow-2xl hover:bg-slate-100 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed select-none"
-        >
-          {isSubmitting ? (
-            <span className="flex items-center gap-2 text-[#143601]">
-              <svg
-                className="animate-spin h-5 w-5 text-[#143601]"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <span>Verificando...</span>
-            </span>
-          ) : (
-            'Login'
-          )}
-        </button>
-      </div>
+      <label className="flex cursor-pointer items-center gap-2.5 text-xs text-stone-600">
+        <input type="checkbox" checked={rememberSession} onChange={(event) => setRememberSession(event.target.checked)}
+          className="h-4 w-4 rounded border-stone-300 text-emerald-800 focus:ring-emerald-600" />
+        Mantener sesión iniciada en este equipo
+      </label>
 
-      {/* Enlaces minimalistas centrados */}
-      <div className="pt-2 flex flex-col items-center gap-3 text-center text-xs">
-        <span className="text-white/60 hover:text-white transition-colors cursor-pointer">
-          ¿Olvidaste tu contraseña?
-        </span>
+      <button type="submit" disabled={isSubmitting}
+        className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">
+        <span>{isSubmitting ? 'Verificando credenciales...' : 'Iniciar Sesión'}</span>
+        {!isSubmitting && <ArrowRightOnRectangleIcon className="h-5 w-5" aria-hidden="true" />}
+      </button>
 
+      <p className="pt-3 text-center text-xs leading-relaxed text-stone-500">
+        ¿No tienes una cuenta de operador? Contacta al Administrador de Red o{' '}
         {onSwitchToRegister ? (
-          <button
-            type="button"
-            onClick={onSwitchToRegister}
-            className="text-white/80 hover:text-white font-medium transition-colors pt-2 focus:outline-none"
-          >
-            ¿No tienes cuenta? <span className="underline font-bold text-white">Regístrate</span>
-          </button>
+          <button type="button" onClick={onSwitchToRegister} className="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline">Regístrate como ciudadano.</button>
         ) : (
-          <Link
-            to="/registro"
-            className="text-white/80 hover:text-white font-medium transition-colors pt-2"
-          >
-            ¿No tienes cuenta? <span className="underline font-bold text-white">Regístrate</span>
-          </Link>
+          <Link to="/registro" className="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline">Regístrate como ciudadano.</Link>
         )}
-      </div>
+      </p>
     </form>
   );
 };

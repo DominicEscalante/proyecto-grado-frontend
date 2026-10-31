@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="440" viewBox="0 0 1080 440" role="img" aria-labelledby="title desc">
+  <title id="title">Tres propuestas de isotipo para AMPAR</title>
+  <desc id="desc">Escudo A, enlace operativo y señal territorial en la paleta verde institucional.</desc>
+  <rect width="1080" height="440" rx="24" fill="#F8FAF8"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <g transform="translate(24 24)">
+      <rect width="328" height="392" rx="20" fill="#FFFFFF" stroke="#DDE8E0"/>
+      <rect x="28" y="28" width="272" height="258" rx="18" fill="#064E3B"/>
+      <path d="M164 72 245 103v61c0 63-35 98-81 124-46-26-81-61-81-124v-61z" fill="none" stroke="#AAD576" stroke-width="9" stroke-linejoin="round"/>
+      <path d="m119 222 45-104 45 104m-74-35h58" fill="none" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="164" y="329" font-size="22" font-weight="700" fill="#143601">01 · Escudo A</text>
+      <text x="164" y="357" font-size="14" fill="#575F59">Protección y autoridad</text>
+    </g>
+    <g transform="translate(376 24)">
+      <rect width="328" height="392" rx="20" fill="#FFFFFF" stroke="#DDE8E0"/>
+      <rect x="28" y="28" width="272" height="258" rx="18" fill="#064E3B"/>
+      <path d="M80 176c24-40 52-60 84-60s60 20 84 60c-24 40-52 60-84 60s-60-20-84-60z" fill="none" stroke="white" stroke-width="14"/>
+      <path d="M95 210c32-48 65-72 99-72 17 0 35 6 53 18" fill="none" stroke="#AAD576" stroke-width="13" stroke-linecap="round"/>
+      <circle cx="164" cy="176" r="17" fill="#AAD576"/>
+      <text x="164" y="329" font-size="22" font-weight="700" fill="#143601">02 · Enlace</text>
+      <text x="164" y="357" font-size="14" fill="#575F59">Coordinación en tiempo real</text>
+    </g>
+    <g transform="translate(728 24)">
+      <rect width="328" height="392" rx="20" fill="#FFFFFF" stroke="#DDE8E0"/>
+      <rect x="28" y="28" width="272" height="258" rx="18" fill="#064E3B"/>
+      <path d="M164 258c-45-55-68-94-68-125a68 68 0 0 1 136 0c0 31-23 70-68 125z" fill="none" stroke="white" stroke-width="11"/>
+      <path d="m117 166 30-27 17 17 17-17 30 27" fill="none" stroke="#AAD576" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="164" cy="109" r="8" fill="#AAD576"/>
+      <text x="164" y="329" font-size="22" font-weight="700" fill="#143601">03 · Territorio</text>
+      <text x="164" y="357" font-size="14" fill="#575F59">La Paz y respuesta local</text>
+    </g>
+  </g>
+</svg>

@@ -2,217 +2,95 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
-import {
-  registerCitizenSchema,
-  RegisterCitizenFormValues,
-} from '../utils/auth.validators.js';
+import { ArrowRightIcon, ExclamationCircleIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { registerCitizenSchema, RegisterCitizenFormValues } from '../utils/auth.validators.js';
 import { useRegister } from '../hooks/useRegister.js';
 
 export interface RegisterFormProps {
   onSwitchToLogin?: () => void;
 }
 
+const inputClass = 'h-11 w-full min-w-0 rounded-lg border border-stone-200 bg-white px-3 text-sm text-slate-900 placeholder:text-stone-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600';
+const labelClass = 'mb-1.5 block text-xs font-semibold text-stone-700';
+
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const { handleRegisterSubmit, errorMessage, isSubmitting } = useRegister();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterCitizenFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterCitizenFormValues>({
     resolver: zodResolver(registerCitizenSchema),
-    defaultValues: {
-      nombres: '',
-      apellidos: '',
-      ci: '',
-      complemento: '',
-      telefono: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    },
+    defaultValues: { nombres: '', apellidos: '', ci: '', complemento: '', telefono: '', email: '', password: '', confirmPassword: '' },
   });
 
   return (
-    <form onSubmit={handleSubmit(handleRegisterSubmit)} className="w-full space-y-4">
+    <form onSubmit={handleSubmit(handleRegisterSubmit)} className="w-full space-y-3.5" noValidate>
       {errorMessage && (
-        <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs backdrop-blur-md animate-fadeIn">
-          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+        <div role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          <ExclamationCircleIcon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />{errorMessage}
         </div>
       )}
-
-      {/* Nombres y Apellidos */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <div className="border-b border-white/25 focus-within:border-white transition-colors pb-1.5">
-            <input
-              type="text"
-              placeholder="Nombres"
-              className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none"
-              {...register('nombres')}
-            />
-          </div>
-          {errors.nombres && (
-            <p className="text-[10px] text-red-300">{errors.nombres.message}</p>
-          )}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="registro-nombres" className={labelClass}>Nombres</label>
+          <input id="registro-nombres" type="text" autoComplete="given-name" placeholder="Tus nombres" className={inputClass} aria-invalid={!!errors.nombres} aria-describedby={errors.nombres ? 'registro-nombres-error' : undefined} {...register('nombres')} />
+          {errors.nombres && <p id="registro-nombres-error" className="mt-1 text-xs text-red-700">{errors.nombres.message}</p>}
         </div>
-
-        <div className="space-y-1">
-          <div className="border-b border-white/25 focus-within:border-white transition-colors pb-1.5">
-            <input
-              type="text"
-              placeholder="Apellidos"
-              className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none"
-              {...register('apellidos')}
-            />
-          </div>
-          {errors.apellidos && (
-            <p className="text-[10px] text-red-300">{errors.apellidos.message}</p>
-          )}
+        <div>
+          <label htmlFor="registro-apellidos" className={labelClass}>Apellidos</label>
+          <input id="registro-apellidos" type="text" autoComplete="family-name" placeholder="Tus apellidos" className={inputClass} aria-invalid={!!errors.apellidos} aria-describedby={errors.apellidos ? 'registro-apellidos-error' : undefined} {...register('apellidos')} />
+          {errors.apellidos && <p id="registro-apellidos-error" className="mt-1 text-xs text-red-700">{errors.apellidos.message}</p>}
         </div>
       </div>
-
-      {/* CI y Complemento */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="col-span-2 space-y-1">
-          <div className="border-b border-white/25 focus-within:border-white transition-colors pb-1.5">
-            <input
-              type="text"
-              placeholder="Carnet de Identidad"
-              className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none"
-              {...register('ci')}
-            />
+        <div className="col-span-2 min-w-0">
+          <label htmlFor="registro-ci" className={labelClass}>Cédula de Identidad (CI)</label>
+          <input id="registro-ci" type="text" placeholder="Número de CI" className={inputClass} aria-invalid={!!errors.ci} aria-describedby={errors.ci ? 'registro-ci-error' : undefined} {...register('ci')} />
+          {errors.ci && <p id="registro-ci-error" className="mt-1 text-xs text-red-700">{errors.ci.message}</p>}
+        </div>
+        <div className="min-w-0">
+          <label htmlFor="registro-complemento" className={labelClass}>Complemento</label>
+          <input id="registro-complemento" type="text" placeholder="Opcional" className={inputClass} aria-invalid={!!errors.complemento} aria-describedby={errors.complemento ? 'registro-complemento-error' : undefined} {...register('complemento')} />
+          {errors.complemento && <p id="registro-complemento-error" className="mt-1 text-xs text-red-700">{errors.complemento.message}</p>}
+        </div>
+      </div>
+      <div>
+        <label htmlFor="registro-telefono" className={labelClass}>Número de celular</label>
+        <div className="flex items-center rounded-lg border border-stone-200 focus-within:border-emerald-600 focus-within:ring-1 focus-within:ring-emerald-600">
+          <span className="pl-3 text-sm text-stone-500">+591</span>
+          <input id="registro-telefono" type="tel" inputMode="numeric" autoComplete="tel-national" placeholder="Número de 8 dígitos" className="h-[42px] w-full min-w-0 rounded-r-lg bg-transparent px-3 text-sm text-slate-900 placeholder:text-stone-400 focus:outline-none" aria-invalid={!!errors.telefono} aria-describedby={errors.telefono ? 'registro-telefono-error' : undefined} {...register('telefono')} />
+        </div>
+        {errors.telefono && <p id="registro-telefono-error" className="mt-1 text-xs text-red-700">{errors.telefono.message}</p>}
+      </div>
+      <div>
+        <label htmlFor="registro-email" className={labelClass}>Correo electrónico</label>
+        <input id="registro-email" type="email" autoComplete="email" placeholder="ej. nombre@correo.com" className={inputClass} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'registro-email-error' : undefined} {...register('email')} />
+        {errors.email && <p id="registro-email-error" className="mt-1 text-xs text-red-700">{errors.email.message}</p>}
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="registro-password" className={labelClass}>Contraseña</label>
+          <div className="relative">
+            <input id="registro-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Mínimo 8 caracteres" className={`${inputClass} pr-10`} aria-invalid={!!errors.password} aria-describedby={errors.password ? 'registro-password-error' : undefined} {...register('password')} />
+            <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Ocultar contraseñas' : 'Mostrar contraseñas'} aria-pressed={showPassword} className="absolute right-3 top-3 rounded text-stone-400 hover:text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-600">
+              {showPassword ? <EyeSlashIcon className="h-5 w-5" aria-hidden="true" /> : <EyeIcon className="h-5 w-5" aria-hidden="true" />}
+            </button>
           </div>
-          {errors.ci && (
-            <p className="text-[10px] text-red-300">{errors.ci.message}</p>
-          )}
+          {errors.password && <p id="registro-password-error" className="mt-1 text-xs text-red-700">{errors.password.message}</p>}
         </div>
-
-        <div className="col-span-1 space-y-1">
-          <div className="border-b border-white/25 focus-within:border-white transition-colors pb-1.5">
-            <input
-              type="text"
-              placeholder="Compl."
-              className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none text-center"
-              {...register('complemento')}
-            />
-          </div>
-          {errors.complemento && (
-            <p className="text-[10px] text-red-300">{errors.complemento.message}</p>
-          )}
+        <div>
+          <label htmlFor="registro-confirm-password" className={labelClass}>Confirmar contraseña</label>
+          <input id="registro-confirm-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Repite la contraseña" className={inputClass} aria-invalid={!!errors.confirmPassword} aria-describedby={errors.confirmPassword ? 'registro-confirm-password-error' : undefined} {...register('confirmPassword')} />
+          {errors.confirmPassword && <p id="registro-confirm-password-error" className="mt-1 text-xs text-red-700">{errors.confirmPassword.message}</p>}
         </div>
       </div>
-
-      {/* Celular */}
-      <div className="space-y-1">
-        <div className="flex items-center border-b border-white/25 focus-within:border-white transition-colors pb-1.5">
-          <span className="text-xs text-white/60 mr-2 font-mono">+591</span>
-          <input
-            type="text"
-            placeholder="Número Celular (8 dígitos)"
-            className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none"
-            {...register('telefono')}
-          />
-        </div>
-        {errors.telefono && (
-          <p className="text-[10px] text-red-300">{errors.telefono.message}</p>
-        )}
-      </div>
-
-      {/* Correo Electrónico */}
-      <div className="space-y-1">
-        <div className="border-b border-white/25 focus-within:border-white transition-colors pb-1.5">
-          <input
-            type="email"
-            placeholder="Correo Electrónico"
-            className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none"
-            {...register('email')}
-          />
-        </div>
-        {errors.email && (
-          <p className="text-[10px] text-red-300">{errors.email.message}</p>
-        )}
-      </div>
-
-      {/* Contraseña */}
-      <div className="space-y-1">
-        <div className="relative border-b border-white/25 focus-within:border-white transition-colors pb-1.5 flex items-center">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Contraseña (mínimo 8 caracteres)"
-            className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none pr-7"
-            {...register('password')}
-          />
-          <button
-            type="button"
-            tabIndex={-1}
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-0 text-white/50 hover:text-white transition-colors"
-          >
-            {showPassword ? (
-              <EyeOff className="w-3.5 h-3.5" />
-            ) : (
-              <Eye className="w-3.5 h-3.5" />
-            )}
-          </button>
-        </div>
-        {errors.password && (
-          <p className="text-[10px] text-red-300">{errors.password.message}</p>
-        )}
-      </div>
-
-      {/* Confirmar Contraseña */}
-      <div className="space-y-1">
-        <div className="border-b border-white/25 focus-within:border-white transition-colors pb-1.5">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Confirmar Contraseña"
-            className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none"
-            {...register('confirmPassword')}
-          />
-        </div>
-        {errors.confirmPassword && (
-          <p className="text-[10px] text-red-300">{errors.confirmPassword.message}</p>
-        )}
-      </div>
-
-      {/* Aviso de verificacion OTP */}
-      <p className="text-[11px] text-white/60 text-center leading-relaxed">
-        Te enviaremos un código OTP de 6 dígitos a tu correo electrónico para verificar tu identidad.
+      <p className="text-xs leading-5 text-stone-500">Te enviaremos un código OTP a tu correo electrónico para verificar tu identidad.</p>
+      <button type="submit" disabled={isSubmitting} className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">
+        {isSubmitting ? 'Registrando...' : 'Crear cuenta'}
+        {!isSubmitting && <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />}
+      </button>
+      <p className="pt-1 text-center text-xs text-stone-500">
+        ¿Ya tienes cuenta?{' '}
+        {onSwitchToLogin ? <button type="button" onClick={onSwitchToLogin} className="font-semibold text-emerald-700 hover:underline">Inicia sesión</button> : <Link to="/login" className="font-semibold text-emerald-700 hover:underline">Inicia sesión</Link>}
       </p>
-
-      {/* Boton Pildora Blanco */}
-      <div className="pt-1">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-4 px-6 rounded-full bg-white text-[#143601] text-sm font-semibold tracking-wide shadow-2xl hover:bg-slate-100 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 select-none"
-        >
-          {isSubmitting ? 'Registrando...' : 'Registrar Cuenta'}
-        </button>
-      </div>
-
-      <div className="pt-1 text-center text-xs">
-        {onSwitchToLogin ? (
-          <button
-            type="button"
-            onClick={onSwitchToLogin}
-            className="text-white/80 hover:text-white font-medium transition-colors focus:outline-none"
-          >
-            ¿Ya tienes cuenta? <span className="underline font-bold text-white">Inicia sesión</span>
-          </button>
-        ) : (
-          <Link
-            to="/login"
-            className="text-white/80 hover:text-white font-medium transition-colors"
-          >
-            ¿Ya tienes cuenta? <span className="underline font-bold text-white">Inicia sesión</span>
-          </Link>
-        )}
-      </div>
     </form>
   );
 };

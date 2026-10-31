@@ -11,13 +11,13 @@ export const apiClient = axios.create({
 
 // Interceptor para inyectar token de autorizacion y credenciales dev locales
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
   // Soporte de identidad en desarrollo local para evitar desconexiones de sesion
-  const authUserStr = localStorage.getItem('auth_user');
+  const authUserStr = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
   if (authUserStr && config.headers) {
     try {
       const authUser = JSON.parse(authUserStr);

@@ -55,5 +55,7 @@ export async function logoutRequest(): Promise<void> {
   } finally {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_user');
   }
 }

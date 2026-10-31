@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/LoginPage.js';
-import { RegisterPage } from '../pages/RegisterPage.js';
 import { CitizenDashboardPage } from '../pages/CitizenDashboardPage.js';
 import { OperatorDashboardPage } from '../pages/OperatorDashboardPage.js';
 import { OperatorHistoryPage } from '../pages/OperatorHistoryPage.js';
@@ -14,12 +13,11 @@ export const router = createBrowserRouter([
     element: <Navigate to="/login" replace />,
   },
   {
-    path: '/login',
     element: <LoginPage />,
-  },
-  {
-    path: '/registro',
-    element: <RegisterPage />,
+    children: [
+      { path: '/login' },
+      { path: '/registro' },
+    ],
   },
   {
     path: '/verificar-identidad',
