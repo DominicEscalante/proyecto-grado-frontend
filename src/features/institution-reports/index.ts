@@ -8,6 +8,7 @@ export * from './utils/incident-formatters.js';
 
 // Componentes publicos
 export { InstitutionReportsView } from './components/InstitutionReportsView.js';
+export { OperatorHistoryView } from './components/OperatorHistoryView.js';
 export { InstitutionHeader } from './components/InstitutionHeader.js';
 export { ActiveIncidentsList } from './components/ActiveIncidentsList.js';
 export { IncidentCard } from './components/IncidentCard.js';

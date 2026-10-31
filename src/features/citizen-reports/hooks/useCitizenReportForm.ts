@@ -7,10 +7,12 @@ import {
   EvidenciaArchivo,
   ReporteCreadoResult,
   ReporteCiudadanoResumen,
+  CoincidenciaReporte,
 } from '../types/citizen-reports.types.js';
 import {
   getCatalogoEmergenciasApi,
   crearReporteApi,
+  buscarCoincidenciaApi,
   adjuntarEvidenciasApi,
 } from '../api/citizen-reports.api.js';
 import {
@@ -19,6 +21,7 @@ import {
   formatBytes,
 } from '../utils/report-formatters.js';
 import { useGpsLocation } from './useGpsLocation.js';
+import { optimizeEvidence } from '../utils/optimize-evidence.js';
 
 export function useCitizenReportForm() {
   const gps = useGpsLocation();
@@ -35,6 +38,22 @@ export function useCitizenReportForm() {
   const [submittingStep, setSubmittingStep] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successReport, setSuccessReport] = useState<ReporteCreadoResult | null>(null);
+  const [coincidencia, setCoincidencia] = useState<CoincidenciaReporte | null>(null);
+  const [avisoCoincidencia, setAvisoCoincidencia] = useState<string | null>(null);
+  const [evidenceUpload, setEvidenceUpload] = useState<'idle' | 'uploading' | 'complete' | 'failed'>('idle');
+  const [retryUpload, setRetryUpload] = useState<{ ticket: string; files: File[] } | null>(null);
+
+  const uploadInBackground = async (ticket: string, files: File[]) => {
+    setEvidenceUpload('uploading');
+    try {
+      await adjuntarEvidenciasApi(ticket, await Promise.all(files.map(optimizeEvidence)));
+      setEvidenceUpload('complete');
+      setRetryUpload(null);
+    } catch {
+      setEvidenceUpload('failed');
+      setRetryUpload({ ticket, files });
+    }
+  };
 
   // Tipos filtrados por la institucion activa
   const incidentesFiltrados = useMemo(() => {
@@ -191,7 +210,7 @@ export function useCitizenReportForm() {
   }, [evidencias]);
 
   // Enviar alerta SOS
-  const handleEnviarReporte = async () => {
+  const registrarReporte = async (incidentePrincipalId?: number | null) => {
     setErrorMessage(null);
 
     // 1. Validar coordenadas GPS
@@ -199,6 +218,10 @@ export function useCitizenReportForm() {
       setErrorMessage(
         'Se requiere la sincronización GPS para enviar la alerta de auxilio. Si tu navegador no tiene GPS, pulsa en el banner para usar las coordenadas de prueba.'
       );
+      return;
+    }
+    if (!import.meta.env.DEV && gps.isSimulated) {
+      setErrorMessage('Se requiere la ubicación real del dispositivo para enviar la alerta.');
       return;
     }
 
@@ -231,7 +254,26 @@ export function useCitizenReportForm() {
       altitud: gps.coords.altitud || 3640,
       referencia_direccion: `Coordenadas GPS sincronizadas (${gps.coords.latitud}, ${gps.coords.longitud})`,
       fecha_generacion_local: new Date().toISOString(),
+      ...(incidentePrincipalId ? { incidente_principal_id: incidentePrincipalId } : {}),
     };
+
+    if (incidentePrincipalId === undefined) {
+      setIsSubmitting(true);
+      setSubmittingStep('Comprobando reportes cercanos...');
+      try {
+        const encontrado = await buscarCoincidenciaApi(payload);
+        if (encontrado) {
+          setCoincidencia(encontrado);
+          return;
+        }
+      } catch {
+        setAvisoCoincidencia('No se pudo comprobar si existen reportes cercanos. Puedes enviar la alerta como independiente.');
+        return;
+      } finally {
+        setIsSubmitting(false);
+        setSubmittingStep(null);
+      }
+    }
 
     setIsSubmitting(true);
     setSubmittingStep('Registrando alerta SOS...');
@@ -240,16 +282,9 @@ export function useCitizenReportForm() {
       // 5. Registrar el reporte
       const reporteCreado = await crearReporteApi(payload);
 
-      // 6. Subir evidencias multimedia si existen
-      if (evidencias.length > 0) {
-        setSubmittingStep(`Adjuntando ${evidencias.length} archivo(s) de evidencia...`);
-        const archivos = evidencias.map((e) => e.file);
-        try {
-          await adjuntarEvidenciasApi(reporteCreado.codigoTicket, archivos);
-        } catch (uploadErr) {
-          console.warn('El reporte se creó pero falló la subida de evidencias:', uploadErr);
-        }
-      }
+      // El reporte queda confirmado antes de procesar la evidencia.
+      const archivos = evidencias.map((e) => e.file);
+      if (archivos.length) void uploadInBackground(reporteCreado.codigoTicket, archivos);
 
       // 7. Exito: Notificar y limpiar campos
       setSuccessReport({
@@ -269,7 +304,7 @@ export function useCitizenReportForm() {
           fechaRegistro: new Date().toISOString(),
           latitud: payload.latitud,
           longitud: payload.longitud,
-          adjuntosCount: evidencias.length,
+          adjuntosCount: 0,
         };
 
         const almacenadosStr = localStorage.getItem('ampar_mis_reportes');
@@ -287,6 +322,8 @@ export function useCitizenReportForm() {
       // Limpiar formulario para proximo envio
       setIndicacionesRapidas('');
       setEvidencias([]);
+      setCoincidencia(null);
+      setAvisoCoincidencia(null);
     } catch (err: unknown) {
       const errorStr = err instanceof Error ? err.message : 'Error al registrar la alerta de auxilio.';
       setErrorMessage(errorStr);
@@ -294,6 +331,19 @@ export function useCitizenReportForm() {
       setIsSubmitting(false);
       setSubmittingStep(null);
     }
+  };
+
+  const handleEnviarReporte = () => void registrarReporte();
+  const confirmarCoincidencia = () => {
+    if (!coincidencia) return;
+    const id = coincidencia.reporteId;
+    setCoincidencia(null);
+    void registrarReporte(id);
+  };
+  const enviarReporteIndependiente = () => {
+    setCoincidencia(null);
+    setAvisoCoincidencia(null);
+    void registrarReporte(null);
   };
 
   const handleCerrarExito = useCallback(() => {
@@ -311,6 +361,13 @@ export function useCitizenReportForm() {
     submittingStep,
     errorMessage,
     successReport,
+    coincidencia,
+    avisoCoincidencia,
+    evidenceUpload,
+    retryEvidenceUpload: () => { if (retryUpload) void uploadInBackground(retryUpload.ticket, retryUpload.files); },
+    confirmarCoincidencia,
+    enviarReporteIndependiente,
+    cancelarCoincidencia: () => setCoincidencia(null),
     cambiarInstitucion,
     setTipoEmergenciaId,
     setIndicacionesRapidas,

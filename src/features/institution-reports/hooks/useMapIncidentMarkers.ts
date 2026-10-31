@@ -187,12 +187,11 @@ export function useMapIncidentMarkers({
   useEffect(() => {
     if (!mapRef.current || !selectedIncident) return;
 
-    mapRef.current.flyTo(
+    const map = mapRef.current;
+    map.setView(
       [selectedIncident.coordenadas.latitud, selectedIncident.coordenadas.longitud],
-      14,
-      {
-        duration: 1.0,
-      }
+      Math.max(map.getZoom(), 16),
+      { animate: true }
     );
   }, [selectedIncident]);
 

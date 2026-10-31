@@ -6,7 +6,7 @@ import { handleApiError } from '../../../api/client.js';
 import { sileo } from 'sileo';
 
 export function useRegister() {
-  const { register } = useAuth();
+  const { register, logout } = useAuth();
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,12 +17,12 @@ export function useRegister() {
 
     try {
       await register(values);
+      await logout();
       sileo.success({
         title: 'Registro exitoso',
-        description: 'Tu cuenta ha sido creada. Procede con la verificación de identidad.',
+        description: 'Tu cuenta ha sido creada. Inicia sesión para verificar tu identidad.',
       });
-      // Redirigir directamente al flujo de verificacion de identidad del ciudadano
-      navigate('/verificar-identidad');
+      navigate('/login');
     } catch (error) {
       const msg = handleApiError(error);
       setErrorMessage(msg);

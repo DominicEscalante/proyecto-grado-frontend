@@ -4,7 +4,6 @@ export type InstitucionTipo = 'POLICIA' | 'BOMBEROS';
 
 export type EstadoIncidente =
   | 'PENDIENTE'
-  | 'DESPACHADO'
   | 'EN_CURSO'
   | 'ATENDIDO'
   | 'FALSA_ALARMA';
@@ -34,6 +33,9 @@ export interface AdjuntoMedia {
 
 export interface IncidenteInstitucional {
   id: number;
+  incidentePrincipalId?: number | null;
+  cantidadReportes?: number;
+  reportesVinculados?: IncidenteInstitucional[];
   codigoTicket: string;
   titulo: string;
   tipoEmergencia: string;
@@ -41,6 +43,7 @@ export interface IncidenteInstitucional {
   estado: EstadoIncidente;
   prioridad: PrioridadIncidente;
   fechaReporte: string;
+  fechaCierre?: string;
   horaFormateada: string;
   ciudadano: CiudadanoInfo;
   coordenadas: Coordenadas;

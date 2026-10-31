@@ -37,6 +37,7 @@ export interface EvidenciaArchivo {
 }
 
 export interface CrearReportePayload {
+  incidente_principal_id?: number;
   institucion_destino: InstitucionDestino;
   tipo_emergencia_id: number;
   descripcion: string;
@@ -45,6 +46,12 @@ export interface CrearReportePayload {
   altitud?: number;
   referencia_direccion: string;
   fecha_generacion_local?: string;
+}
+
+export interface CoincidenciaReporte {
+  reporteId: number;
+  fechaReporte: string;
+  distanciaMetros: number;
 }
 
 export interface ReporteCreadoResult {
@@ -59,7 +66,7 @@ export interface ReporteCreadoResult {
 export interface ReporteCiudadanoResumen {
   reporteId: number;
   codigoTicket: string;
-  estado: 'PENDIENTE' | 'ASIGNADO' | 'DESPACHADO' | 'ATENDIDO' | 'RECHAZADO';
+  estado: 'PENDIENTE' | 'EN_CURSO' | 'ATENDIDO' | 'FALSA_ALARMA';
   institucionDestino: InstitucionDestino;
   tipoEmergencia: string;
   descripcion: string;

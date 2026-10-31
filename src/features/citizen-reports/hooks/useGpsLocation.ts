@@ -85,6 +85,7 @@ export function useGpsLocation() {
 
   // Forzar simulacion de coordenadas en La Paz para pruebas de desarrollo local
   const usarCoordenadasPruebaLaPaz = useCallback(() => {
+    if (!import.meta.env.DEV) return;
     const coords: GpsCoordinates = {
       latitud: COORDENADAS_DEFAULT_LA_PAZ.latitud,
       longitud: COORDENADAS_DEFAULT_LA_PAZ.longitud,

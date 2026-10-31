@@ -7,6 +7,7 @@ import {
   TipoEmergenciaItem,
   InstitucionDestino,
   ReporteCiudadanoResumen,
+  CoincidenciaReporte,
 } from '../types/citizen-reports.types.js';
 import {
   CATALOGO_EMERGENCIAS_DEFAULT,
@@ -17,6 +18,11 @@ interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+}
+
+export async function buscarCoincidenciaApi(params: Pick<CrearReportePayload, 'institucion_destino' | 'tipo_emergencia_id' | 'latitud' | 'longitud'>): Promise<CoincidenciaReporte | null> {
+  const response = await apiClient.get<ApiResponse<CoincidenciaReporte | null>>('/api/ciudadano/reportes/coincidencias', { params });
+  return response.data.data;
 }
 
 /**

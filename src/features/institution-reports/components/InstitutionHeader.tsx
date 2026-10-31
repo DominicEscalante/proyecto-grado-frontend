@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   BellIcon,
   ChartBarIcon,
@@ -11,6 +11,7 @@ import { useAuth } from '../../../context/AuthContext.js';
 
 export const InstitutionHeader: React.FC = () => {
   const { user, logout } = useAuth();
+  const historyActive = useLocation().pathname === '/operador/historial';
   const name = (user?.rango ? `${user.rango} ` : '') +
     (user?.name || (user?.nombres ? `${user.nombres} ${user.apellidos || ''}`.trim() : '') || 'Sargento Pedro Mamani');
   const isBomberos = user?.institucion === 'BOMBEROS' || user?.rol_id === 3;
@@ -23,11 +24,12 @@ export const InstitutionHeader: React.FC = () => {
         <span className="hidden sm:inline-flex rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white">{institution}</span>
       </div>
       <nav aria-label="Navegación del operador" className="hidden md:flex items-center gap-1">
-        <Link to="/operador/emergencias" className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/15 px-3 py-2 text-sm font-semibold text-white"><MapIcon className="h-4 w-4" />Despacho</Link>
+        <Link to="/operador/emergencias" className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-white ${historyActive ? 'hover:bg-white/10' : 'border border-white/20 bg-white/15'}`}><MapIcon className="h-4 w-4" />Despacho</Link>
         <button type="button" className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/75 hover:bg-white/10 hover:text-white"><ChartBarIcon className="h-4 w-4" />Analítica</button>
-        <button type="button" className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/75 hover:bg-white/10 hover:text-white"><ClockIcon className="h-4 w-4" />Historial</button>
+        <Link to="/operador/historial" className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-white/10 ${historyActive ? 'border border-white/20 bg-white/15 font-semibold text-white' : 'text-white/75 hover:text-white'}`}><ClockIcon className="h-4 w-4" />Historial</Link>
       </nav>
       <div className="flex items-center gap-2 sm:gap-3">
+        <Link to={historyActive ? '/operador/emergencias' : '/operador/historial'} className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-2 py-1.5 text-xs font-semibold text-white md:hidden">{historyActive ? <MapIcon className="h-4 w-4" /> : <ClockIcon className="h-4 w-4" />}{historyActive ? 'Despacho' : 'Historial'}</Link>
         <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-xs text-white/90"><span className="h-2 w-2 rounded-full bg-emerald-300" />En línea</span>
         <button type="button" aria-label="Alertas" className="relative rounded-lg p-2 text-white/85 hover:bg-white/10 hover:text-white"><BellIcon className="h-5 w-5" /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-400" /></button>
         <details className="relative">

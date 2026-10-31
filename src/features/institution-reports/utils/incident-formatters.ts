@@ -54,12 +54,6 @@ export function getEstadoBadgeConfig(estado: EstadoIncidente): BadgeConfig {
         badgeClass: 'bg-red-50 text-red-700 border-red-200',
         dotClass: 'bg-red-500',
       };
-    case 'DESPACHADO':
-      return {
-        label: 'Despachado',
-        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
-        dotClass: 'bg-amber-500',
-      };
     case 'EN_CURSO':
       return {
         label: 'En Curso',

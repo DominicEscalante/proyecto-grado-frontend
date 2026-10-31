@@ -82,13 +82,13 @@ export const GpsStatusBar: React.FC<GpsStatusBarProps> = ({ gps }) => {
             Obteniendo ubicación GPS del dispositivo...
           </span>
         </div>
-        <button
+        {import.meta.env.DEV && <button
           type="button"
           onClick={gps.usarCoordenadasPruebaLaPaz}
           className="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md font-bold transition-colors uppercase tracking-wider"
         >
           Usar La Paz
-        </button>
+        </button>}
       </div>
     );
   }
@@ -117,13 +117,13 @@ export const GpsStatusBar: React.FC<GpsStatusBarProps> = ({ gps }) => {
           <RefreshCw className="w-3 h-3" />
           Reintentar GPS
         </button>
-        <button
+        {import.meta.env.DEV && <button
           type="button"
           onClick={gps.usarCoordenadasPruebaLaPaz}
           className="flex-1 py-1.5 px-3 rounded-lg bg-white text-rose-700 hover:bg-white/90 text-[11px] font-bold transition-colors"
         >
           Simular La Paz (Pruebas)
-        </button>
+        </button>}
       </div>
     </div>
   );
