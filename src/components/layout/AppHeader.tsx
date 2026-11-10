@@ -16,6 +16,7 @@ import {
   UsersIcon,
   MapIcon,
   ClipboardDocumentListIcon,
+  ChartBarIcon,
   ShieldCheckIcon,
   BellIcon,
   ChevronDownIcon,
@@ -73,6 +74,12 @@ const ALL_NAV_ITEMS: NavItemConfig[] = [
     name: 'Despacho en Vivo',
     href: '/operador/emergencias',
     icon: MapIcon,
+    roles: [2, 3],
+  },
+  {
+    name: 'Análisis',
+    href: '/operador/analisis',
+    icon: ChartBarIcon,
     roles: [2, 3],
   },
   {

@@ -5,7 +5,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { FireIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import L from 'leaflet';
 import { IncidenteInstitucional } from '../types/institution-reports.types.js';
-import { buildHeatZones } from '../utils/heat-zones.js';
 
 interface UseMapIncidentMarkersOptions {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -15,6 +14,8 @@ interface UseMapIncidentMarkersOptions {
   showHeatmap?: boolean;
   mapStyle?: 'light';
   isBomberos?: boolean;
+  compactMarkers?: boolean;
+  continuousHeatmap?: boolean;
 }
 
 const LA_PAZ_CENTRO: [number, number] = [-16.5000, -68.1500];
@@ -27,6 +28,8 @@ export function useMapIncidentMarkers({
   showHeatmap = true,
   mapStyle = 'light',
   isBomberos = false,
+  compactMarkers = false,
+  continuousHeatmap = false,
 }: UseMapIncidentMarkersOptions) {
   const mapRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -59,8 +62,10 @@ export function useMapIncidentMarkers({
     tileLayerRef.current = tileLayer;
 
     // Grupos de capas
-    const markersLayer = L.layerGroup().addTo(map);
-    const heatLayer = L.layerGroup().addTo(map);
+    const markersLayer = L.layerGroup();
+    const heatLayer = L.layerGroup();
+    heatLayer.addTo(map);
+    markersLayer.addTo(map);
 
     markersLayerRef.current = markersLayer;
     heatLayerRef.current = heatLayer;
@@ -104,27 +109,38 @@ export function useMapIncidentMarkers({
 
     if (!showHeatmap) return;
 
-    buildHeatZones(incidents).forEach((zona) => {
-      const isAlta = zona.intensidad === 'ALTA';
-      const color = isBomberos ? (isAlta ? '#d91e36' : '#ef7674') : (isAlta ? '#dc2626' : '#d97706');
-      const fillColor = isBomberos ? (isAlta ? '#d91e36' : '#ef7674') : (isAlta ? '#dc2626' : '#f59e0b');
-
-      const circle = L.circle([zona.latitud, zona.longitud], {
-        radius: zona.radioMetros,
-        color: color,
-        weight: 1.25,
-        opacity: 0.5,
-        fillColor: fillColor,
-        fillOpacity: isAlta ? 0.24 : 0.14,
+    if (continuousHeatmap) {
+      const kernels = incidents.filter((incident) => incident.estado !== 'FALSA_ALARMA');
+      kernels.forEach((incident) => {
+        L.circle([incident.coordenadas.latitud, incident.coordenadas.longitud], {
+          radius: 260,
+          stroke: false,
+          fillColor: '#f97316',
+          fillOpacity: 0.075,
+          interactive: false,
+        }).addTo(layer);
+        L.circle([incident.coordenadas.latitud, incident.coordenadas.longitud], {
+          radius: 90,
+          stroke: false,
+          fillColor: '#dc2626',
+          fillOpacity: 0.16,
+          interactive: false,
+        }).addTo(layer);
       });
-
-      circle.bindTooltip(
-        `${zona.cantidadReportes} reportes próximos`,
-        { direction: 'top', sticky: true }
-      );
-      circle.addTo(layer);
-    });
-  }, [incidents, showHeatmap, isBomberos]);
+    } else {
+      const color = isBomberos ? '#d91e36' : '#dc2626';
+      incidents.filter((incident) => incident.estado !== 'FALSA_ALARMA').forEach((incident) => {
+        L.circle([incident.coordenadas.latitud, incident.coordenadas.longitud], {
+          radius: 180,
+          color,
+          weight: 1.25,
+          opacity: 0.45,
+          fillColor: isBomberos ? '#ef7674' : '#f97316',
+          fillOpacity: 0.16,
+        }).addTo(layer);
+      });
+    }
+  }, [incidents, showHeatmap, isBomberos, continuousHeatmap]);
 
   // Actualizacion de marcadores en el mapa
   useEffect(() => {
@@ -137,7 +153,8 @@ export function useMapIncidentMarkers({
       const isSelected = selectedIncident?.id === inc.id;
       const isPolicia = inc.institucion === 'POLICIA';
       const IncidentIcon = isPolicia ? ShieldCheckIcon : FireIcon;
-      const iconMarkup = renderToStaticMarkup(React.createElement(IncidentIcon, { className: 'h-4 w-4 text-white' }));
+      const markerSize = compactMarkers ? 14 : 36;
+      const iconMarkup = renderToStaticMarkup(React.createElement(IncidentIcon, { className: `${compactMarkers ? 'h-2 w-2' : 'h-4 w-4'} text-white` }));
 
       // Diseno de icono personalizado con Tailwind inline
       const isPending = inc.estado === 'PENDIENTE';
@@ -149,14 +166,14 @@ export function useMapIncidentMarkers({
       const markerHtml = `
         <div class="relative flex items-center justify-center cursor-pointer transition-transform hover:scale-110">
           ${
-            isSelected
+            isSelected && !compactMarkers
               ? `<div class="absolute -inset-3 rounded-full animate-ping opacity-60" style="background-color: ${glowColor};"></div>
                  <div class="absolute -right-3 -top-1 w-3.5 h-3.5 rounded-full bg-white shadow-lg border-2 border-stone-500"></div>`
               : ''
           }
-              <div class="relative flex items-center justify-center w-9 h-9 rounded-full shadow-lg transition-all"
-               style="background-color: ${primaryColor}; box-shadow: 0 0 15px ${glowColor}; border: 2px solid ${
-        isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'
+              <div class="relative flex items-center justify-center rounded-full shadow transition-all"
+               style="width: ${markerSize}px; height: ${markerSize}px; background-color: ${primaryColor}; box-shadow: ${compactMarkers ? '0 1px 4px rgba(0,0,0,.35)' : `0 0 15px ${glowColor}`}; border: ${compactMarkers ? 1 : 2}px solid ${
+        isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.75)'
       };">
             ${iconMarkup}
           </div>
@@ -166,8 +183,8 @@ export function useMapIncidentMarkers({
       const customIcon = L.divIcon({
         className: 'custom-leaflet-marker',
         html: markerHtml,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize / 2, markerSize / 2],
       });
 
       const marker = L.marker([inc.coordenadas.latitud, inc.coordenadas.longitud], {
@@ -180,8 +197,9 @@ export function useMapIncidentMarkers({
       });
 
       marker.addTo(layer);
+      marker.setZIndexOffset(isSelected ? 1000 : 100);
     });
-  }, [incidents, selectedIncident, onSelectIncident, isBomberos]);
+  }, [incidents, selectedIncident, onSelectIncident, isBomberos, compactMarkers]);
 
   // Centrar mapa suavemente al seleccionar un incidente
   useEffect(() => {

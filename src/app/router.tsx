@@ -3,6 +3,7 @@ import { LoginPage } from '../pages/LoginPage.js';
 import { CitizenDashboardPage } from '../pages/CitizenDashboardPage.js';
 import { OperatorDashboardPage } from '../pages/OperatorDashboardPage.js';
 import { OperatorHistoryPage } from '../pages/OperatorHistoryPage.js';
+import { OperatorAnalysisPage } from '../pages/OperatorAnalysisPage.js';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage.js';
 import { VerifyIdentityPage } from '../pages/VerifyIdentityPage.js';
 import { ProtectedRoute } from '../components/ProtectedRoute.js';
@@ -48,6 +49,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[2, 3]}>
         <OperatorHistoryPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/operador/analisis',
+    element: (
+      <ProtectedRoute allowedRoles={[2, 3]}>
+        <OperatorAnalysisPage />
       </ProtectedRoute>
     ),
   },

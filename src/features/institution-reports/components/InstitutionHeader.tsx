@@ -11,7 +11,9 @@ import { useAuth } from '../../../context/AuthContext.js';
 
 export const InstitutionHeader: React.FC = () => {
   const { user, logout } = useAuth();
-  const historyActive = useLocation().pathname === '/operador/historial';
+  const pathname = useLocation().pathname;
+  const historyActive = pathname === '/operador/historial';
+  const analysisActive = pathname === '/operador/analisis';
   const name = (user?.rango ? `${user.rango} ` : '') +
     (user?.name || (user?.nombres ? `${user.nombres} ${user.apellidos || ''}`.trim() : '') || 'Sargento Pedro Mamani');
   const isBomberos = user?.institucion === 'BOMBEROS' || user?.rol_id === 3;
@@ -24,8 +26,8 @@ export const InstitutionHeader: React.FC = () => {
         <span className="hidden sm:inline-flex rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white">{institution}</span>
       </div>
       <nav aria-label="Navegación del operador" className="hidden md:flex items-center gap-1">
-        <Link to="/operador/emergencias" className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-white ${historyActive ? 'hover:bg-white/10' : 'border border-white/20 bg-white/15'}`}><MapIcon className="h-4 w-4" />Despacho</Link>
-        <button type="button" className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/75 hover:bg-white/10 hover:text-white"><ChartBarIcon className="h-4 w-4" />Analítica</button>
+        <Link to="/operador/emergencias" className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-white ${!historyActive && !analysisActive ? 'border border-white/20 bg-white/15' : 'hover:bg-white/10'}`}><MapIcon className="h-4 w-4" />Despacho</Link>
+        <Link to="/operador/analisis" aria-current={analysisActive ? 'page' : undefined} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${analysisActive ? 'border border-white/20 bg-white/15 font-semibold text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'}`}><ChartBarIcon className="h-4 w-4" />Análisis</Link>
         <Link to="/operador/historial" className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-white/10 ${historyActive ? 'border border-white/20 bg-white/15 font-semibold text-white' : 'text-white/75 hover:text-white'}`}><ClockIcon className="h-4 w-4" />Historial</Link>
       </nav>
       <div className="flex items-center gap-2 sm:gap-3">

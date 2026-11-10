@@ -7,6 +7,8 @@ import {
 } from '../types/citizen-reports.types.js';
 import { COORDENADAS_DEFAULT_LA_PAZ } from '../utils/report-formatters.js';
 
+const GPS_PERMISSION_STORAGE_KEY = 'ampar_gps_permission_granted';
+
 export function useGpsLocation() {
   const [gpsState, setGpsState] = useState<GpsLocationState>({
     status: 'obtaining',
@@ -102,9 +104,38 @@ export function useGpsLocation() {
     });
   }, []);
 
-  // Sincronizacion inicial automatica
+  // Consultar el permiso del navegador al entrar al sistema. Si no está concedido,
+  // solicitarlo en cada entrada; solo persistir la confirmación del navegador.
   useEffect(() => {
-    sincronizarGps();
+    let cancelled = false;
+
+    const solicitarUbicacion = async () => {
+      try {
+        if ('permissions' in navigator) {
+          const permission = await navigator.permissions.query({ name: 'geolocation' });
+          if (cancelled) return;
+
+          if (permission.state === 'granted') {
+            localStorage.setItem(GPS_PERMISSION_STORAGE_KEY, 'true');
+            sincronizarGps();
+            return;
+          }
+        }
+
+        // La solicitud del navegador se repetirá al volver a entrar si el permiso
+        // no fue concedido. El navegador controla su propio diálogo de permisos.
+        sincronizarGps();
+      } catch {
+        // Algunos navegadores no soportan Permissions API; geolocation sigue
+        // siendo la fuente de verdad para solicitar y confirmar el permiso.
+        if (!cancelled) sincronizarGps();
+      }
+    };
+
+    solicitarUbicacion();
+    return () => {
+      cancelled = true;
+    };
   }, [sincronizarGps]);
 
   return {
