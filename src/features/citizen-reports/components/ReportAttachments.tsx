@@ -75,6 +75,7 @@ function AttachmentPreview({ attachment, ticket, index }: {
           <img src={url} alt={label} loading="lazy" className="h-36 w-full object-contain" />
         </a>
       )}
+      {attachment.tipoArchivo.startsWith('audio/') && <audio controls src={url} preload="metadata" aria-label={label} />}
       {isVideo && <video aria-label={label} src={url} controls playsInline preload="metadata" className="h-36 w-full bg-slate-950 object-contain" />}
       <div className="flex flex-wrap items-center justify-between gap-2 p-2">
         <a href={url} target="_blank" rel="noreferrer" className="text-xs font-medium text-emerald-900 underline">{label}</a>

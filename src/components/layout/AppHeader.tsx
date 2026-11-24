@@ -18,10 +18,8 @@ import {
   ClipboardDocumentListIcon,
   ChartBarIcon,
   ShieldCheckIcon,
-  BellIcon,
   ChevronDownIcon,
   UserCircleIcon,
-  Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
@@ -48,18 +46,6 @@ const ALL_NAV_ITEMS: NavItemConfig[] = [
     name: 'Directorio',
     href: '/admin/usuarios',
     icon: UsersIcon,
-    roles: [4],
-  },
-  {
-    name: 'Despacho en Vivo',
-    href: '/operador/emergencias',
-    icon: MapIcon,
-    roles: [4],
-  },
-  {
-    name: 'Incidentes',
-    href: '/admin/incidentes',
-    icon: ClipboardDocumentListIcon,
     roles: [4],
   },
   {
@@ -212,8 +198,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className={`sticky top-0 z-40 w-full bg-[#143601] backdrop-blur-md border-b border-white/15 transition-colors ${className}`}>
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* 1. Zona Izquierda: Marca + Contexto + Navegacion Dinamica */}
+      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between ${effectiveRoleId === 4 ? "md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]" : ""}`}>
+        {/* 1. Zona Izquierda: Marca + Contexto */}
         <div className="flex items-center min-w-0">
           {/* Marca / Logo */}
           <Link
@@ -237,58 +223,48 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </span>
           </div>
 
-          {/* Navegacion Multi-Rol (Desktop) */}
-          {visibleNavItems.length > 0 && (
-            <nav
-              aria-label="Navegación principal"
-              className="hidden md:flex items-center gap-1 ml-6"
-            >
-              {visibleNavItems.map((item) => {
-                const active = isItemActive(item);
-                const IconComponent = item.icon;
-
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={(e) => handleNavClick(e, item)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      active
-                        ? 'bg-white/15 text-white font-semibold border border-white/20 shadow-2xs'
-                        : 'text-white/75 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <IconComponent
-                      className={`w-4 h-4 ${
-                        active ? 'text-white stroke-[2.2]' : 'text-white/65 stroke-[1.8]'
-                      }`}
-                    />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          )}
         </div>
 
+        {/* Navegacion Multi-Rol (Desktop) */}
+        {visibleNavItems.length > 0 && (
+          <nav
+            aria-label="Navegación principal"
+            className={`hidden md:flex items-center gap-1 ${effectiveRoleId === 4 ? "" : "ml-6 mr-auto"}`}
+          >
+            {visibleNavItems.map((item) => {
+              const active = isItemActive(item);
+              const IconComponent = item.icon;
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={(e) => handleNavClick(e, item)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    active
+                      ? 'bg-white/15 text-white font-semibold border border-white/20 shadow-2xs'
+                      : 'text-white/75 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <IconComponent
+                    className={`w-4 h-4 ${
+                      active ? 'text-white stroke-[2.2]' : 'text-white/65 stroke-[1.8]'
+                    }`}
+                  />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
         {/* 2. Zona Derecha: Utilidades + Dropdown de Perfil de Usuario */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 justify-self-end">
           {/* Indicador discreto de estado operativo */}
           <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-white/90 bg-white/10 px-2.5 py-1 rounded-full border border-white/15 select-none">
             <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
             <span>En línea</span>
           </div>
-
-          {/* Boton de Notificaciones */}
-          <button
-            type="button"
-            className="p-2 rounded-lg text-white/75 hover:text-white hover:bg-white/10 transition-colors relative cursor-pointer"
-            title="Notificaciones del sistema"
-            aria-label="Notificaciones"
-          >
-            <BellIcon className="w-5 h-5 stroke-[1.8]" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-300 ring-2 ring-[#143601]" />
-          </button>
 
           {/* Trigger y Menu Desplegable de Usuario (Dropdown) */}
           <DropdownMenu>
@@ -333,32 +309,17 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 </div>
               </div>
 
-              {/* Cuerpo del Dropdown */}
-              <div className="py-1">
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (onTabChange) {
-                      onTabChange('perfil');
-                    } else if (effectiveRoleId === 4) {
-                      navigate('/admin/usuarios');
-                    }
-                  }}
-                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer font-medium transition-colors"
-                >
-                  <UserCircleIcon className="w-4 h-4 text-stone-500 shrink-0 stroke-[1.8]" />
-                  <span>Mi Perfil y Credenciales</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={() => {
-                    // Preferencias de vista
-                  }}
-                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer font-medium transition-colors"
-                >
-                  <Cog6ToothIcon className="w-4 h-4 text-stone-500 shrink-0 stroke-[1.8]" />
-                  <span>Preferencias de Vista</span>
-                </DropdownMenuItem>
-              </div>
+              {effectiveRoleId === 1 && onTabChange && (
+                <div className="py-1">
+                  <DropdownMenuItem
+                    onSelect={() => onTabChange('perfil')}
+                    className="flex items-center gap-2.5 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer font-medium transition-colors"
+                  >
+                    <UserCircleIcon className="w-4 h-4 text-stone-500 shrink-0 stroke-[1.8]" />
+                    <span>Mi Perfil y Credenciales</span>
+                  </DropdownMenuItem>
+                </div>
+              )}
 
               {/* Pie del Dropdown */}
               <DropdownMenuSeparator className="my-0 bg-stone-100" />

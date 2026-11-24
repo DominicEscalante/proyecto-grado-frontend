@@ -25,7 +25,7 @@ import { useGpsLocation } from './useGpsLocation.js';
 import { optimizeEvidence } from '../utils/optimize-evidence.js';
 
 const EVIDENCE_TYPES = new Set([
-  'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime',
+  'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav', 'audio/webm', 'video/mp4', 'video/quicktime',
 ]);
 
 export function useCitizenReportForm() {
@@ -116,7 +116,7 @@ export function useCitizenReportForm() {
 
       const maxPermitidos = MAX_EVIDENCE_FILES - evidencias.length;
       if (fileArray.length > maxPermitidos) {
-        setErrorMessage(`Puedes adjuntar hasta ${MAX_EVIDENCE_FILES} fotos o videos por reporte.`);
+        setErrorMessage(`Puedes adjuntar hasta ${MAX_EVIDENCE_FILES} archivos por reporte.`);
       }
       if (maxPermitidos <= 0) return;
 
@@ -133,7 +133,7 @@ export function useCitizenReportForm() {
         // Validar tipo
         const esVideo = file.type.startsWith('video/');
         if (!EVIDENCE_TYPES.has(file.type)) {
-          setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4 o MOV.`);
+          setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4, MOV, MP3, M4A, OGG, WAV o WebM de audio.`);
           continue;
         }
 
@@ -142,7 +142,7 @@ export function useCitizenReportForm() {
           id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
           file,
           previewUrl,
-          tipo: esVideo ? 'video' : 'image',
+          tipo: file.type.startsWith('audio/') ? 'audio' : esVideo ? 'video' : 'image',
           tamanoFormateado: formatBytes(file.size),
         });
       }
@@ -175,7 +175,7 @@ export function useCitizenReportForm() {
       // Validar tipo
       const esVideo = file.type.startsWith('video/');
       if (!EVIDENCE_TYPES.has(file.type)) {
-        setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4 o MOV.`);
+        setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4, MOV, MP3, M4A, OGG, WAV o WebM de audio.`);
         return;
       }
 
@@ -189,7 +189,7 @@ export function useCitizenReportForm() {
               id: item.id,
               file,
               previewUrl,
-              tipo: esVideo ? 'video' : 'image',
+              tipo: file.type.startsWith('audio/') ? 'audio' : esVideo ? 'video' : 'image',
               tamanoFormateado: formatBytes(file.size),
             };
           }

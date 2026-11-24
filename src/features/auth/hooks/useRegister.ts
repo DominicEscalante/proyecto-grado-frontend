@@ -1,44 +1,56 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext.js';
-import { RegisterCitizenFormValues } from '../utils/auth.validators.js';
 import { handleApiError } from '../../../api/client.js';
-import { sileo } from 'sileo';
+import { requestRegistrationCode, RegistrationChallenge } from '../api/auth.api.js';
+import { RegisterCitizenFormValues } from '../utils/auth.validators.js';
 
 export function useRegister() {
-  const { register, logout } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
+  const [pending, setPending] = useState<{
+    values: RegisterCitizenFormValues;
+    challenge: RegistrationChallenge;
+  } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegisterSubmit = async (values: RegisterCitizenFormValues) => {
     setErrorMessage(null);
     setIsSubmitting(true);
-
     try {
-      await register(values);
-      await logout();
-      sileo.success({
-        title: 'Registro exitoso',
-        description: 'Tu cuenta ha sido creada. Inicia sesión para verificar tu identidad.',
-      });
-      navigate('/login');
+      const challenge = await requestRegistrationCode(values);
+      setPending({ values, challenge });
     } catch (error) {
-      const msg = handleApiError(error);
-      setErrorMessage(msg);
-      sileo.error({
-        title: 'Error de registro',
-        description: msg,
-      });
+      setErrorMessage(handleApiError(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const confirmCode = async (code: string) => {
+    if (!pending) return;
+    setErrorMessage(null);
+    setIsSubmitting(true);
+    try {
+      await register(pending.values, pending.challenge.solicitudId, code);
+      navigate('/ciudadano/reportes', { replace: true });
+    } catch (error) {
+      setErrorMessage(handleApiError(error));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return {
-    handleRegisterSubmit,
+    pending,
     errorMessage,
     isSubmitting,
-    clearError: () => setErrorMessage(null),
+    handleRegisterSubmit,
+    confirmCode,
+    editDetails: () => {
+      setPending(null);
+      setErrorMessage(null);
+    },
   };
 }

@@ -15,11 +15,12 @@ export const router = createBrowserRouter([
     element: <Navigate to="/login" replace />,
   },
   {
+    path: '/login',
     element: <LoginPage />,
-    children: [
-      { path: '/login' },
-      { path: '/registro' },
-    ],
+  },
+  {
+    path: '/registro',
+    element: <LoginPage />,
   },
   {
     path: '/verificar-identidad',

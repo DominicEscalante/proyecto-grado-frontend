@@ -1,4 +1,4 @@
-import type { IncidenteInstitucional, ZonaCalor } from '../types/institution-reports.types.js';
+import type { IncidenteInstitucional } from '../types/institution-reports.types.js';
 
 const EARTH_RADIUS_METERS = 6_371_000;
 const ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -78,7 +78,7 @@ export function buildHeatZones(
   incidents: IncidenteInstitucional[],
   now = Date.now(),
   windowMs = ANALYSIS_WINDOW_MS
-): ZonaCalor[] {
+) {
   const recentIncidents = incidents.filter((incident) => {
     const reportedAt = new Date(incident.fechaReporte).getTime();
     return (
@@ -106,11 +106,26 @@ export function buildHeatZones(
     // DBSCAN can chain adjacent points; reject a cluster whose footprint is too broad.
     if (maxDistancia > MAX_ZONE_RADIUS_METERS - EDGE_BUFFER_METERS) return [];
 
+    const nearest = cluster.reduce((best, report) =>
+      distanceMeters(centro, report.coordenadas) < distanceMeters(centro, best.coordenadas) ? report : best
+    );
+    const types = new Map<string, number>();
+    const events = new Set<number>();
+    for (const report of cluster) {
+      events.add(report.incidentePrincipalId ?? report.id);
+      types.set(report.tipoEmergencia, (types.get(report.tipoEmergencia) ?? 0) + 1);
+    }
+    const topCount = Math.max(...types.values());
+    const reference = nearest.coordenadas.referencia?.trim();
     return [{
+      referencia: reference && !/coordenadas gps/i.test(reference) ? reference : `${centro.latitud.toFixed(3)}, ${centro.longitud.toFixed(3)}`,
+      incidentes: events.size,
+      tiposPrincipales: [...types].filter(([, count]) => count === topCount).map(([type]) => type).sort(),
+
       ...centro,
       radioMetros: Math.max(90, Math.ceil(maxDistancia + EDGE_BUFFER_METERS)),
       cantidadReportes: cluster.length,
       intensidad: cluster.length >= 5 ? 'ALTA' as const : 'MEDIA' as const,
     }];
-  });
+  }).sort((a, b) => b.cantidadReportes - a.cantidadReportes);
 }

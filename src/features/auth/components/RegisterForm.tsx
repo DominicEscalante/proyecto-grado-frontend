@@ -15,19 +15,70 @@ const labelClass = 'mb-1.5 block text-xs font-semibold text-stone-700';
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { handleRegisterSubmit, errorMessage, isSubmitting } = useRegister();
+  const { pending, handleRegisterSubmit, confirmCode, editDetails, errorMessage, isSubmitting } = useRegister();
+  const [code, setCode] = useState('');
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterCitizenFormValues>({
     resolver: zodResolver(registerCitizenSchema),
     defaultValues: { nombres: '', apellidos: '', ci: '', complemento: '', telefono: '', email: '', password: '', confirmPassword: '' },
   });
 
+  const errorAlert = errorMessage && (
+    <div role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+      <ExclamationCircleIcon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+      {errorMessage}
+    </div>
+  );
+
+  if (pending) {
+    const simulatedCode = pending.challenge.codigoSimulado;
+    return (
+      <form
+        className="w-full space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (code.length === 6 && !isSubmitting) void confirmCode(code);
+        }}
+      >
+        <h2 className="text-lg font-semibold text-slate-900">Verifica tu correo</h2>
+        <p className="text-sm text-stone-600">
+          Introduce el código de 6 dígitos para completar tu registro.
+          {!simulatedCode && <> Lo enviamos a <strong>{pending.values.email}</strong>.</>}
+        </p>
+        {errorAlert}
+        <div>
+          <label htmlFor="registro-otp" className={labelClass}>Código de verificación</label>
+          <input
+            id="registro-otp"
+            className={inputClass}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            autoFocus
+            maxLength={6}
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))}
+          />
+        </div>
+        <button type="submit" disabled={isSubmitting || code.length !== 6} className="h-11 w-full rounded-lg bg-emerald-800 text-sm font-semibold text-white disabled:opacity-60">
+          {isSubmitting ? 'Procesando...' : 'Confirmar e ingresar'}
+        </button>
+        <div className="flex justify-between gap-3 text-sm font-semibold text-emerald-700">
+          <button type="button" disabled={isSubmitting} onClick={() => {
+            setCode('');
+            editDetails();
+          }}>Editar datos</button>
+          <button type="button" disabled={isSubmitting} onClick={() => {
+            setCode('');
+            void handleRegisterSubmit(pending.values);
+          }}>Reenviar código</button>
+        </div>
+      </form>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit(handleRegisterSubmit)} className="w-full space-y-3.5" noValidate>
-      {errorMessage && (
-        <div role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          <ExclamationCircleIcon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />{errorMessage}
-        </div>
-      )}
+      {errorAlert}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="registro-nombres" className={labelClass}>Nombres</label>
@@ -84,7 +135,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
       </div>
       <p className="text-xs leading-5 text-stone-500">Te enviaremos un código OTP a tu correo electrónico para verificar tu identidad.</p>
       <button type="submit" disabled={isSubmitting} className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">
-        {isSubmitting ? 'Registrando...' : 'Crear cuenta'}
+        {isSubmitting ? 'Enviando...' : 'Enviar código'}
         {!isSubmitting && <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />}
       </button>
       <p className="pt-1 text-center text-xs text-stone-500">

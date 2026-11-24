@@ -7,7 +7,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '../../../components/ui/index.js';
 
-const acceptedFiles = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,.mov';
+const acceptedFiles = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,.mov,audio/mpeg,audio/mp4,audio/ogg,audio/wav,audio/webm';
 
 interface EvidenceUploaderProps {
   evidencias: EvidenciaArchivo[];
@@ -34,9 +34,9 @@ export const EvidenceUploader = ({
   };
 
   return (
-    <div role="group" aria-label="Fotos y videos" className="min-w-0 space-y-1">
+    <div role="group" aria-label="Fotos, videos y audios" className="min-w-0 space-y-1">
       <div className="flex min-h-5 items-center justify-between gap-2 text-xs">
-        <span className="font-medium text-slate-800">Fotos y videos</span>
+        <span className="font-medium text-slate-800">Fotos, videos y audios</span>
         <span role="status" aria-label="Archivos adjuntos" className="tabular-nums text-slate-600">
           {evidencias.length}/{MAX_EVIDENCE_FILES}
         </span>
@@ -107,7 +107,7 @@ export const EvidenceUploader = ({
               <DialogTitle>Archivo adjunto</DialogTitle>
               <DialogDescription className="break-all">{preview.file.name} · {preview.tamanoFormateado}</DialogDescription>
             </DialogHeader>
-            {preview.tipo === 'image' ? (
+            {preview.tipo === 'audio' ? <audio controls src={preview.previewUrl} /> : preview.tipo === 'image' ? (
               <img src={preview.previewUrl} alt={preview.file.name} className="max-h-[60dvh] w-full object-contain" />
             ) : (
               <video src={preview.previewUrl} controls className="max-h-[60dvh] w-full" />

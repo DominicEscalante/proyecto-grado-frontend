@@ -45,13 +45,15 @@ apiClient.interceptors.request.use((config) => {
 
 interface DetailedApiError extends ApiErrorResponse {
   details?: Array<{ campo?: string; mensaje?: string }>;
+  error?: Pick<DetailedApiError, 'message' | 'details'>;
 }
 
 // Formateador de errores consistente
 export function handleApiError(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const axiosErr = error as AxiosError<DetailedApiError>;
-    const responseData = axiosErr.response?.data;
+    const responseBody = axiosErr.response?.data;
+    const responseData = responseBody?.error ?? responseBody;
 
     if (responseData?.details && Array.isArray(responseData.details) && responseData.details.length > 0) {
       const detailsText = responseData.details

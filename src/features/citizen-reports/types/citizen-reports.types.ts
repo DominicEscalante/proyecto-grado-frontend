@@ -32,7 +32,7 @@ export interface EvidenciaArchivo {
   id: string;
   file: File;
   previewUrl: string;
-  tipo: 'image' | 'video';
+  tipo: 'image' | 'video' | 'audio';
   tamanoFormateado: string;
 }
 

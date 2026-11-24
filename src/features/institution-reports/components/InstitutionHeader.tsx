@@ -31,7 +31,18 @@ export const InstitutionHeader: React.FC = () => {
         <Link to="/operador/historial" className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-white/10 ${historyActive ? 'border border-white/20 bg-white/15 font-semibold text-white' : 'text-white/75 hover:text-white'}`}><ClockIcon className="h-4 w-4" />Historial</Link>
       </nav>
       <div className="flex items-center gap-2 sm:gap-3">
-        <Link to={historyActive ? '/operador/emergencias' : '/operador/historial'} className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-2 py-1.5 text-xs font-semibold text-white md:hidden">{historyActive ? <MapIcon className="h-4 w-4" /> : <ClockIcon className="h-4 w-4" />}{historyActive ? 'Despacho' : 'Historial'}</Link>
+        <nav aria-label="Navegación móvil del operador" className="flex md:hidden">
+          {[
+            { path: '/operador/emergencias', label: 'Despacho', Icon: MapIcon },
+            { path: '/operador/analisis', label: 'Análisis', Icon: ChartBarIcon },
+            { path: '/operador/historial', label: 'Historial', Icon: ClockIcon },
+          ].map(({ path, label, Icon }) => (
+            <Link key={path} to={path} aria-label={label} title={label} aria-current={pathname === path ? 'page' : undefined}
+              className={`rounded-lg p-2 text-white ${pathname === path ? 'bg-white/20' : 'hover:bg-white/10'}`}>
+              <Icon className="h-5 w-5" />
+            </Link>
+          ))}
+        </nav>
         <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-xs text-white/90"><span className="h-2 w-2 rounded-full bg-emerald-300" />En línea</span>
         <button type="button" aria-label="Alertas" className="relative rounded-lg p-2 text-white/85 hover:bg-white/10 hover:text-white"><BellIcon className="h-5 w-5" /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-400" /></button>
         <details className="relative">

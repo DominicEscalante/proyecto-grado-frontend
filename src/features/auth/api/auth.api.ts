@@ -17,10 +17,8 @@ export async function loginRequest(
   return response.data.data;
 }
 
-export async function registerCitizenRequest(
-  data: RegisterCitizenData
-): Promise<AuthSessionResponse> {
-  const payload = {
+function registrationPayload(data: RegisterCitizenData) {
+  return {
     email: data.email,
     password: data.password,
     ci: data.ci,
@@ -29,10 +27,29 @@ export async function registerCitizenRequest(
     apellidos: data.apellidos,
     telefono: data.telefono,
   };
+}
 
-  const response = await apiClient.post<ApiResponse<AuthSessionResponse>>(
+export interface RegistrationChallenge {
+  solicitudId: string;
+  codigoSimulado?: string;
+}
+
+export async function requestRegistrationCode(data: RegisterCitizenData): Promise<RegistrationChallenge> {
+  const response = await apiClient.post<ApiResponse<RegistrationChallenge>>(
     '/api/auth/registro',
-    payload
+    registrationPayload(data)
+  );
+  return response.data.data;
+}
+
+export async function registerCitizenRequest(
+  data: RegisterCitizenData,
+  solicitudId: string,
+  codigo: string
+): Promise<AuthSessionResponse> {
+  const response = await apiClient.post<ApiResponse<AuthSessionResponse>>(
+    '/api/auth/registro/confirmar',
+    { ...registrationPayload(data), solicitudId, codigo }
   );
   return response.data.data;
 }

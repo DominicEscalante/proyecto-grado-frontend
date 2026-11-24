@@ -45,7 +45,7 @@ export const ActiveIncidentsList: React.FC<Props> = ({ incidents, selectedIncide
           {invalidRange && <p role="alert" className="col-span-2 text-rose-800">La fecha inicial debe ser anterior o igual a la final.</p>}
         </div>
         <div role="group" aria-label="Filtrar por estado" className={`mt-3 grid grid-cols-3 rounded-lg p-1 ${isBomberos ? 'bg-[#ec5766]/10' : 'bg-emerald-900/5'}`}>
-          {([['PENDIENTES', 'Pendientes'], ['EN_CURSO', 'En curso'], ['FALSA_ALARMA', 'Falsas']] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={`whitespace-nowrap rounded-md px-1 py-1.5 text-[10px] font-semibold transition-colors ${filter === value ? `${isBomberos ? 'bg-[#c42348]' : 'bg-[#143601]'} text-white shadow-sm` : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}`}>{label}</button>)}
+          {([['PENDIENTES', 'Pendientes'], ['EN_CURSO', 'En revisión'], ['FALSA_ALARMA', 'Falsas']] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={`whitespace-nowrap rounded-md px-1 py-1.5 text-[10px] font-semibold transition-colors ${filter === value ? `${isBomberos ? 'bg-[#c42348]' : 'bg-[#143601]'} text-white shadow-sm` : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}`}>{label}</button>)}
         </div>
       </div>
       <div className="custom-scrollbar flex-1 overflow-y-auto p-2">

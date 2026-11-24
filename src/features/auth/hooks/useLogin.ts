@@ -19,6 +19,7 @@ export function useLogin() {
       const user = await login(values, rememberSession);
 
       sileo.success({
+        duration: 1000,
         title: 'Inicio de sesión exitoso',
         description: `Bienvenido al sistema, ${user.name || user.email}.`,
       });

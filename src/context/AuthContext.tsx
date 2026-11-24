@@ -14,7 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials, rememberSession?: boolean) => Promise<User>;
   loginWithPasskey: () => Promise<void>;
-  register: (data: RegisterCitizenData) => Promise<User>;
+  register: (data: RegisterCitizenData, solicitudId: string, codigo: string) => Promise<User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -91,20 +91,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(result.user);
   };
 
-  const register = async (data: RegisterCitizenData): Promise<User> => {
-    setIsLoading(true);
-    try {
-      const result = await registerCitizenRequest(data);
-      const token = result.token || (result.session as any)?.token;
-      if (token) {
-        localStorage.setItem('auth_token', token);
-      }
-      localStorage.setItem('auth_user', JSON.stringify(result.user));
-      setUser(result.user);
-      return result.user;
-    } finally {
-      setIsLoading(false);
-    }
+  const register = async (data: RegisterCitizenData, solicitudId: string, codigo: string): Promise<User> => {
+    const result = await registerCitizenRequest(data, solicitudId, codigo);
+    if (!result.token) throw new Error('No se pudo iniciar la sesión.');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_user');
+    localStorage.setItem('auth_token', result.token);
+    localStorage.setItem('auth_user', JSON.stringify(result.user));
+    setUser(result.user);
+    return result.user;
   };
 
   const logout = async () => {

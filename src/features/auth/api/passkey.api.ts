@@ -13,9 +13,11 @@ const createPasskeyClient = (token?: string) => createAuthClient({
   },
 });
 
-export async function enrollPasskey(): Promise<void> {
+export async function enrollPasskey(password?: string): Promise<void> {
   const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-  const { error } = await createPasskeyClient(token ?? undefined).passkey.addPasskey();
+  const { error } = await createPasskeyClient(token ?? undefined).passkey.addPasskey(password ? {
+    fetchOptions: { headers: { 'x-ampar-enrollment-password': password } },
+  } : undefined);
   if (error) throw new Error('No se pudo registrar la clave de acceso.');
 }
 
@@ -30,4 +32,12 @@ export async function signInWithPasskey(): Promise<{ user: User; token: string }
     skipStoredAuth: true,
   });
   return { user: response.data.data.user, token };
+}
+
+export async function confirmBackupPasskey(): Promise<string> {
+  const { data, error } = await createPasskeyClient().signIn.passkey({
+    fetchOptions: { headers: { 'x-ampar-backup': '1' } },
+  });
+  if (error || !data?.session?.token) throw new Error('No se pudo confirmar la clave de acceso.');
+  return data.session.token;
 }

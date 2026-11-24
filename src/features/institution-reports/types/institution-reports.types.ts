@@ -26,7 +26,7 @@ export interface Coordenadas {
 export interface AdjuntoMedia {
   id: string | number;
   url: string;
-  tipo: 'image' | 'video';
+  tipo: 'image' | 'video' | 'audio';
   formato: string;
   nombre?: string;
 }
