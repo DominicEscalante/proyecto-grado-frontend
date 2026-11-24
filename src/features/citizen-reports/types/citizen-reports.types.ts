@@ -14,7 +14,7 @@ export interface TipoEmergenciaItem {
 export interface GpsCoordinates {
   latitud: number;
   longitud: number;
-  altitud: number;
+  altitud: number | null;
   precisionMetros: number;
   timestamp: number;
 }
@@ -43,7 +43,7 @@ export interface CrearReportePayload {
   descripcion: string;
   latitud: number;
   longitud: number;
-  altitud?: number;
+  altitud?: number | null;
   referencia_direccion: string;
   fecha_generacion_local?: string;
 }

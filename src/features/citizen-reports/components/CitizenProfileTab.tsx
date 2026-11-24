@@ -1,6 +1,7 @@
 // Pestana de Perfil de Ciudadano Autenticado
 
 import React from 'react';
+import { PasskeyAction } from '../../auth/components/PasskeyAction.js';
 import { useAuth } from '../../../context/AuthContext.js';
 import { ShieldCheck, LogOut, Phone, Mail, IdCard, MapPin } from 'lucide-react';
 
@@ -92,6 +93,7 @@ export const CitizenProfileTab: React.FC = () => {
         </div>
       </div>
 
+      <PasskeyAction mode="enroll" />
       {/* Boton Cerrar Sesion */}
       <button
         type="button"

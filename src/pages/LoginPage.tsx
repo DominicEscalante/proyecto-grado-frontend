@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { AppLogo, MountainBackground } from '../components/ui/index.js';
 import { LoginForm, RegisterForm } from '../features/auth/index.js';
+import { PasskeyAction } from '../features/auth/components/PasskeyAction.js';
 
 export interface LoginPageProps {
   initialMode?: 'login' | 'register';
@@ -51,6 +52,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
             </p>
           </div>
           {isRegister ? <RegisterForm onSwitchToLogin={() => navigate('/login')} /> : <LoginForm onSwitchToRegister={() => navigate('/registro')} />}
+          {!isRegister && <PasskeyAction mode="login" />}
         </div>
         <p className="text-center text-[11px] leading-5 text-stone-400 lg:hidden">{institutionalFooter}</p>
       </section>

@@ -1,6 +1,6 @@
 // Hook de logica de negocio y estado para el formulario de reporte de emergencias (Feature-First)
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   InstitucionDestino,
   TipoEmergenciaItem,
@@ -19,9 +19,14 @@ import {
   CATALOGO_EMERGENCIAS_DEFAULT,
   filtrarIncidentesPorInstitucion,
   formatBytes,
+  MAX_EVIDENCE_FILES,
 } from '../utils/report-formatters.js';
 import { useGpsLocation } from './useGpsLocation.js';
 import { optimizeEvidence } from '../utils/optimize-evidence.js';
+
+const EVIDENCE_TYPES = new Set([
+  'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime',
+]);
 
 export function useCitizenReportForm() {
   const gps = useGpsLocation();
@@ -32,6 +37,8 @@ export function useCitizenReportForm() {
   const [tipoEmergenciaId, setTipoEmergenciaId] = useState<number>(4); // Default: Incendio Estructural
   const [indicacionesRapidas, setIndicacionesRapidas] = useState<string>('');
   const [evidencias, setEvidencias] = useState<EvidenciaArchivo[]>([]);
+
+  const previousEvidence = useRef<EvidenciaArchivo[]>([]);
 
   // Estados de proceso y feedback
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -107,11 +114,11 @@ export function useCitizenReportForm() {
       const fileArray = Array.from(files);
       setErrorMessage(null);
 
-      const maxPermitidos = 5 - evidencias.length;
-      if (maxPermitidos <= 0) {
-        setErrorMessage('Ha alcanzado el límite máximo de 5 archivos multimedia por reporte.');
-        return;
+      const maxPermitidos = MAX_EVIDENCE_FILES - evidencias.length;
+      if (fileArray.length > maxPermitidos) {
+        setErrorMessage(`Puedes adjuntar hasta ${MAX_EVIDENCE_FILES} fotos o videos por reporte.`);
       }
+      if (maxPermitidos <= 0) return;
 
       const archivosAProcesar = fileArray.slice(0, maxPermitidos);
       const nuevasEvidencias: EvidenciaArchivo[] = [];
@@ -124,10 +131,9 @@ export function useCitizenReportForm() {
         }
 
         // Validar tipo
-        const esImagen = file.type.startsWith('image/');
         const esVideo = file.type.startsWith('video/');
-        if (!esImagen && !esVideo) {
-          setErrorMessage(`El archivo "${file.name}" no es una imagen o video válido.`);
+        if (!EVIDENCE_TYPES.has(file.type)) {
+          setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4 o MOV.`);
           continue;
         }
 
@@ -150,13 +156,7 @@ export function useCitizenReportForm() {
 
   // Remover un archivo adjunto y liberar memoria
   const handleRemoverEvidencia = useCallback((id: string) => {
-    setEvidencias((prev) => {
-      const encontrada = prev.find((e) => e.id === id);
-      if (encontrada?.previewUrl) {
-        URL.revokeObjectURL(encontrada.previewUrl);
-      }
-      return prev.filter((e) => e.id !== id);
-    });
+    setEvidencias((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
   // Reemplazar un archivo de evidencia especifico por un archivo nuevo
@@ -173,20 +173,18 @@ export function useCitizenReportForm() {
       }
 
       // Validar tipo
-      const esImagen = file.type.startsWith('image/');
       const esVideo = file.type.startsWith('video/');
-      if (!esImagen && !esVideo) {
-        setErrorMessage(`El archivo "${file.name}" no es una imagen o video válido.`);
+      if (!EVIDENCE_TYPES.has(file.type)) {
+        setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4 o MOV.`);
         return;
       }
 
+      setErrorMessage(null);
       const previewUrl = URL.createObjectURL(file);
       setEvidencias((prev) =>
         prev.map((item) => {
           if (item.id === targetId) {
-            if (item.previewUrl) {
-              URL.revokeObjectURL(item.previewUrl);
-            }
+
             return {
               id: item.id,
               file,
@@ -202,12 +200,18 @@ export function useCitizenReportForm() {
     []
   );
 
-  // Limpiar URLs en desmontaje
+  // Mantener las vistas previas de los archivos que siguen adjuntos.
   useEffect(() => {
-    return () => {
-      evidencias.forEach((e) => URL.revokeObjectURL(e.previewUrl));
-    };
+    const activeUrls = new Set(evidencias.map((item) => item.previewUrl));
+    for (const item of previousEvidence.current) {
+      if (!activeUrls.has(item.previewUrl)) URL.revokeObjectURL(item.previewUrl);
+    }
+    previousEvidence.current = evidencias;
   }, [evidencias]);
+
+  useEffect(() => () => {
+    previousEvidence.current.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+  }, []);
 
   // Enviar alerta SOS
   const registrarReporte = async (incidentePrincipalId?: number | null) => {
@@ -237,6 +241,10 @@ export function useCitizenReportForm() {
     }
 
     // 3. Formatear descripcion (minimo 5 caracteres para cumplir con esquema backend)
+    if (/[^\P{Cc}\t\n\r]|[\u202A-\u202E\u2066-\u2069]/u.test(indicacionesRapidas)) {
+      setErrorMessage('Las indicaciones contienen caracteres de control no permitidos.');
+      return;
+    }
     let descripcionFinal = indicacionesRapidas.trim();
     if (descripcionFinal.length < 5) {
       descripcionFinal = `Alerta de ${incidenteSeleccionado.nombre} reportada por el ciudadano.${
@@ -251,7 +259,7 @@ export function useCitizenReportForm() {
       descripcion: descripcionFinal,
       latitud: Number(gps.coords.latitud.toFixed(6)),
       longitud: Number(gps.coords.longitud.toFixed(6)),
-      altitud: gps.coords.altitud || 3640,
+      altitud: gps.coords.altitud,
       referencia_direccion: `Coordenadas GPS sincronizadas (${gps.coords.latitud}, ${gps.coords.longitud})`,
       fecha_generacion_local: new Date().toISOString(),
       ...(incidentePrincipalId ? { incidente_principal_id: incidentePrincipalId } : {}),

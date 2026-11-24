@@ -2,6 +2,8 @@
 
 import { TipoEmergenciaItem, InstitucionDestino } from '../types/citizen-reports.types.js';
 
+export const MAX_EVIDENCE_FILES = 5;
+
 /**
  * Normaliza cualquier objeto de emergencia devuelto por el backend o definido localmente.
  */

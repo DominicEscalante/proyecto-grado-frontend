@@ -8,12 +8,13 @@ import { buildHeatZones } from '../features/institution-reports/utils/heat-zones
 import { IncidenteInstitucional, InstitucionTipo } from '../features/institution-reports/types/institution-reports.types.js';
 import { MapLegend } from '../features/institution-reports/components/MapLegend.js';
 
-type PeriodoAnalisis = '24h' | '7d' | '30d';
+type PeriodoAnalisis = '24h' | '7d' | '30d' | '90d';
 
 const PERIODOS: { id: PeriodoAnalisis; label: string; horas: number }[] = [
   { id: '24h', label: '24 horas', horas: 24 },
   { id: '7d', label: '7 días', horas: 24 * 7 },
   { id: '30d', label: '30 días', horas: 24 * 30 },
+  { id: '90d', label: '90 días', horas: 24 * 90 },
 ];
 
 function flattenReports(incidents: IncidenteInstitucional[]): IncidenteInstitucional[] {
@@ -42,7 +43,22 @@ export const OperatorAnalysisPage: React.FC = () => {
       (institutionFilter === 'TODAS' || report.institucion === institutionFilter)
     );
   }, [reports, period, institutionFilter]);
-  const heatZones = useMemo(() => buildHeatZones(filteredReports, Date.now()), [filteredReports]);
+  const windowMs = PERIODOS.find((item) => item.id === period)!.horas * 3_600_000;
+  const heatZones = useMemo(() => buildHeatZones(filteredReports, Date.now(), windowMs), [filteredReports, windowMs]);
+  const statistics = useMemo(() => {
+    const police = new Set<number>();
+    const firefighters = new Set<number>();
+    const hours = Array<number>(24).fill(0);
+    const formatter = new Intl.DateTimeFormat('es-BO', {
+      timeZone: 'America/La_Paz', hour: '2-digit', hourCycle: 'h23',
+    });
+    for (const report of filteredReports) {
+      (report.institucion === 'POLICIA' ? police : firefighters).add(report.incidentePrincipalId ?? report.id);
+      hours[Number(formatter.format(new Date(report.fechaReporte)))]++;
+    }
+    return { police: police.size, firefighters: firefighters.size, hours };
+  }, [filteredReports]);
+  const peak = Math.max(1, ...statistics.hours);
   const hotReportCount = heatZones.reduce((sum, zone) => sum + zone.cantidadReportes, 0);
   useMapIncidentMarkers({
     containerRef: { current: mapContainer },
@@ -70,7 +86,9 @@ export const OperatorAnalysisPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2" aria-label="Filtros del mapa">
           <div className="flex rounded-lg bg-stone-100 p-1">{PERIODOS.map((item) => <button key={item.id} type="button" aria-pressed={period === item.id} onClick={() => setPeriod(item.id)} className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${period === item.id ? `${theme.active} text-white shadow-sm` : 'text-stone-600 hover:text-stone-900'}`}>{item.label}</button>)}</div>
           <select aria-label="Filtrar institución" value={institutionFilter} onChange={(event) => setInstitutionFilter(event.target.value as 'TODAS' | InstitucionTipo)} className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:ring-2 focus:ring-emerald-700/20">
-            <option value="TODAS">Todas las instituciones</option><option value="POLICIA">Policía</option><option value="BOMBEROS">Bomberos</option>
+            {!institution && <option value="TODAS">Todas las instituciones</option>}
+            {institution !== 'BOMBEROS' && <option value="POLICIA">Policía</option>}
+            {institution !== 'POLICIA' && <option value="BOMBEROS">Bomberos</option>}
           </select>
         </div>
       </section>
@@ -79,6 +97,24 @@ export const OperatorAnalysisPage: React.FC = () => {
         <article className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Reportes en período</p><p className="mt-2 text-2xl font-bold text-stone-900">{isLoading ? '—' : filteredReports.length}</p><p className="mt-1 text-xs text-stone-500">{PERIODOS.find((item) => item.id === period)?.label}</p></article>
         <article className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm"><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Zonas de concentración</p><p className={`mt-2 text-2xl font-bold ${theme.accent}`}>{isLoading ? '—' : heatZones.length}</p><p className="mt-1 text-xs text-stone-500">Al menos 3 reportes próximos</p></article>
         <article className="col-span-2 rounded-xl border border-stone-200 bg-white p-4 shadow-sm lg:col-span-1"><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Reportes dentro de zonas</p><p className="mt-2 text-2xl font-bold text-red-700">{isLoading ? '—' : hotReportCount}</p><p className="mt-1 text-xs text-stone-500">{heatZones.filter((zone) => zone.intensidad === 'ALTA').length} zonas de intensidad alta</p></article>
+      </section>
+
+      <section className="rounded-xl border border-stone-200 bg-white p-4">
+        <h2 className="font-semibold">Incidentes por institución</h2>
+        <dl className="mt-2 flex flex-wrap gap-4 text-sm">
+          {institutionFilter !== 'BOMBEROS' && <div><dt>Policía</dt><dd className="font-bold">{isLoading ? '—' : statistics.police}</dd></div>}
+          {institutionFilter !== 'POLICIA' && <div><dt>Bomberos</dt><dd className="font-bold">{isLoading ? '—' : statistics.firefighters}</dd></div>}
+        </dl>
+        <h3 className="mt-4 font-semibold">Reportes por hora de La Paz</h3>
+        {!isLoading && <div className="overflow-x-auto"><ol className="mt-2 grid min-w-[570px] grid-cols-[repeat(24,minmax(0,1fr))] gap-1">
+          {statistics.hours.map((count, hour) => <li key={hour} className="text-center text-xs">
+            <div className="flex h-24 flex-col justify-end">
+              <span>{count}</span>
+              <div aria-hidden="true" className={`rounded-t ${theme.active}`} style={{ height: `${count / peak * 75}%` }} />
+            </div>
+            <span>{String(hour).padStart(2, '0')}</span>
+          </li>)}
+        </ol></div>}
       </section>
 
       {error && <div role="status" className="shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">Sin conexión con la central. Reintentando automáticamente.</div>}
@@ -91,7 +127,7 @@ export const OperatorAnalysisPage: React.FC = () => {
         <MapLegend />
         {!isLoading && filteredReports.length === 0 && <div className="absolute inset-0 z-[500] flex items-center justify-center bg-white/35 p-6 text-center"><div className="rounded-xl border border-stone-200 bg-white/95 px-5 py-4 shadow"><p className="font-semibold text-stone-800">No hay reportes en este período</p><p className="mt-1 text-sm text-stone-500">Prueba otro rango de tiempo o institución.</p></div></div>}
       </section>
-      <p className="shrink-0 text-xs text-stone-500">Las zonas se calculan con reportes de hasta 24 horas, agrupados dentro de 300 m. Cada zona tiene al menos 3 reportes.</p>
+      <p className="shrink-0 text-xs text-stone-500">Las zonas se calculan con los reportes del período seleccionado, agrupados dentro de 300 m. Cada zona tiene al menos 3 reportes.</p>
     </main>
   </div>;
 };

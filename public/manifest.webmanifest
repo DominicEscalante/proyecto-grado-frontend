@@ -1,0 +1,15 @@
+{
+  "id": "./",
+  "name": "AMPAR · Reporte de emergencias",
+  "short_name": "AMPAR",
+  "lang": "es-BO",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#143601",
+  "theme_color": "#143601",
+  "icons": [
+    { "src": "icons/ampar-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/ampar-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { IncidenteInstitucional } from '../types/institution-reports.types.js';
+import { filterDispatchIncidents } from '../utils/dispatch-filters.js';
 import { IncidentCard } from './IncidentCard.js';
 
 interface Props {
@@ -13,12 +14,17 @@ interface Props {
 }
 
 export const ActiveIncidentsList: React.FC<Props> = ({ incidents, selectedIncidentId, selectedReportId, onSelectIncident, onSelectReport, busqueda, onBusquedaChange, isLoading, isBomberos }) => {
+  const [desde, setDesde] = useState('');
+  const [hasta, setHasta] = useState('');
+  const [tipo, setTipo] = useState('');
+  const tipos = useMemo(() => [...new Set(incidents.map((incident) => incident.tipoEmergencia))]
+    .sort((a, b) => a.localeCompare(b, 'es')), [incidents]);
+  const invalidRange = Boolean(desde && hasta && desde > hasta);
   const [filter, setFilter] = useState<'PENDIENTES' | 'EN_CURSO' | 'FALSA_ALARMA'>('PENDIENTES');
-  const visible = useMemo(() => incidents.filter((incident) => {
-    if (filter === 'PENDIENTES') return incident.estado === 'PENDIENTE';
-    if (filter === 'EN_CURSO') return incident.estado === 'EN_CURSO';
-    return incident.estado === 'FALSA_ALARMA';
-  }), [incidents, filter]);
+  const visible = useMemo(
+    () => invalidRange ? [] : filterDispatchIncidents(incidents, filter, tipo, desde, hasta),
+    [incidents, filter, tipo, desde, hasta, invalidRange],
+  );
   const sectionTitle = filter === 'FALSA_ALARMA' ? 'Falsas Alarmas' : 'Incidentes Activos';
 
   return (
@@ -29,6 +35,15 @@ export const ActiveIncidentsList: React.FC<Props> = ({ incidents, selectedIncide
           <MagnifyingGlassIcon className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${isBomberos ? 'text-[#da344d]/70' : 'text-stone-400'}`} />
           <input value={busqueda} onChange={(event) => onBusquedaChange(event.target.value)} placeholder="Buscar incidente, dirección o ticket" className={`w-full rounded-lg border py-2 pl-9 pr-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 ${isBomberos ? 'border-[#ec5766]/20 bg-[#FDF8F7] focus:border-[#da344d] focus:ring-[#da344d]/10' : 'border-emerald-900/10 bg-[#F8FAF8] focus:border-emerald-700 focus:ring-emerald-700/10'} focus:ring-2`} />
         </label>
+        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+          <label>Desde<input type="date" value={desde} max={hasta || undefined} onChange={(event) => setDesde(event.target.value)} className="block w-full rounded border border-stone-300 bg-white p-1" /></label>
+          <label>Hasta<input type="date" value={hasta} min={desde || undefined} onChange={(event) => setHasta(event.target.value)} className="block w-full rounded border border-stone-300 bg-white p-1" /></label>
+          <label className="col-span-2">Tipo de emergencia<select value={tipo} onChange={(event) => setTipo(event.target.value)} className="block w-full rounded border border-stone-300 bg-white p-1">
+            <option value="">Todos los tipos</option>
+            {tipos.map((item) => <option key={item}>{item}</option>)}
+          </select></label>
+          {invalidRange && <p role="alert" className="col-span-2 text-rose-800">La fecha inicial debe ser anterior o igual a la final.</p>}
+        </div>
         <div role="group" aria-label="Filtrar por estado" className={`mt-3 grid grid-cols-3 rounded-lg p-1 ${isBomberos ? 'bg-[#ec5766]/10' : 'bg-emerald-900/5'}`}>
           {([['PENDIENTES', 'Pendientes'], ['EN_CURSO', 'En curso'], ['FALSA_ALARMA', 'Falsas']] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={`whitespace-nowrap rounded-md px-1 py-1.5 text-[10px] font-semibold transition-colors ${filter === value ? `${isBomberos ? 'bg-[#c42348]' : 'bg-[#143601]'} text-white shadow-sm` : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}`}>{label}</button>)}
         </div>

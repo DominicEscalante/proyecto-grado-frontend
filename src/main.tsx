@@ -7,6 +7,12 @@ import { Toaster } from 'sileo';
 import 'sileo/styles.css';
 import './index.css';
 
+if (import.meta.env.PROD && window.isSecureContext && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((error) => {
+    console.warn('No se pudo registrar el servicio de la aplicación instalada.', error);
+  });
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>

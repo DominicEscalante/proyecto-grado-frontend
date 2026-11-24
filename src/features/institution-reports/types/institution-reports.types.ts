@@ -19,7 +19,7 @@ export interface CiudadanoInfo {
 export interface Coordenadas {
   latitud: number;
   longitud: number;
-  altitud: number;
+  altitud: number | null;
   referencia: string;
 }
 

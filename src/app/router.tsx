@@ -5,6 +5,7 @@ import { OperatorDashboardPage } from '../pages/OperatorDashboardPage.js';
 import { OperatorHistoryPage } from '../pages/OperatorHistoryPage.js';
 import { OperatorAnalysisPage } from '../pages/OperatorAnalysisPage.js';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage.js';
+import { AdminAuditPage } from '../pages/AdminAuditPage.js';
 import { VerifyIdentityPage } from '../pages/VerifyIdentityPage.js';
 import { ProtectedRoute } from '../components/ProtectedRoute.js';
 
@@ -65,6 +66,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[4]}>
         <AdminDashboardPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/auditoria',
+    element: (
+      <ProtectedRoute allowedRoles={[4]}>
+        <AdminAuditPage />
       </ProtectedRoute>
     ),
   },

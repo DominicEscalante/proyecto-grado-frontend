@@ -157,3 +157,17 @@ export async function getMisReportesApi(
     throw new Error(handleApiError(error));
   }
 }
+
+export interface ReportAttachment {
+  adjuntoId: number;
+  tipoArchivo: string;
+  urlArchivo: string;
+}
+
+export async function getReportAttachments(ticket: string, signal: AbortSignal): Promise<ReportAttachment[]> {
+  const { data } = await apiClient.get<ApiResponse<{ adjuntos: ReportAttachment[] }>>(
+    `/api/ciudadano/reportes/${encodeURIComponent(ticket)}`,
+    { signal },
+  );
+  return data.data.adjuntos;
+}

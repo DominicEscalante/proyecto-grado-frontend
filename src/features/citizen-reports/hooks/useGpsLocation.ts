@@ -45,7 +45,7 @@ export function useGpsLocation() {
         const coords: GpsCoordinates = {
           latitud: Number(position.coords.latitude.toFixed(6)),
           longitud: Number(position.coords.longitude.toFixed(6)),
-          altitud: position.coords.altitude ? Math.round(position.coords.altitude) : 3640,
+          altitud: position.coords.altitude,
           precisionMetros: Math.round(position.coords.accuracy),
           timestamp: position.timestamp,
         };

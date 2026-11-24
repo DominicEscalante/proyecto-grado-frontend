@@ -13,6 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials, rememberSession?: boolean) => Promise<User>;
+  loginWithPasskey: () => Promise<void>;
   register: (data: RegisterCitizenData) => Promise<User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -80,6 +81,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithPasskey = async () => {
+    const { signInWithPasskey } = await import('../features/auth/api/passkey.api.js');
+    const result = await signInWithPasskey();
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    sessionStorage.setItem('auth_token', result.token);
+    sessionStorage.setItem('auth_user', JSON.stringify(result.user));
+    setUser(result.user);
+  };
+
   const register = async (data: RegisterCitizenData): Promise<User> => {
     setIsLoading(true);
     try {
@@ -127,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithPasskey,
         register,
         logout,
         refreshUser,

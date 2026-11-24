@@ -1,6 +1,12 @@
 import axios, { AxiosError } from 'axios';
 import { ApiErrorResponse } from '../types/api.types.js';
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipStoredAuth?: boolean;
+  }
+}
+
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   headers: {
@@ -11,6 +17,7 @@ export const apiClient = axios.create({
 
 // Interceptor para inyectar token de autorizacion y credenciales dev locales
 apiClient.interceptors.request.use((config) => {
+  if (config.skipStoredAuth) return config;
   const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -18,7 +25,7 @@ apiClient.interceptors.request.use((config) => {
 
   // Soporte de identidad en desarrollo local para evitar desconexiones de sesion
   const authUserStr = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
-  if (authUserStr && config.headers) {
+  if (import.meta.env.DEV && !token && authUserStr && config.headers) {
     try {
       const authUser = JSON.parse(authUserStr);
       if (authUser?.id) {

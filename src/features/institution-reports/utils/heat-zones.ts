@@ -1,4 +1,4 @@
-import { IncidenteInstitucional, ZonaCalor } from '../types/institution-reports.types.js';
+import type { IncidenteInstitucional, ZonaCalor } from '../types/institution-reports.types.js';
 
 const EARTH_RADIUS_METERS = 6_371_000;
 const ANALYSIS_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -76,14 +76,15 @@ function findClusters(points: IncidenteInstitucional[]): IncidenteInstitucional[
 /** Builds small, data-driven hotspot zones; isolated incidents remain point markers. */
 export function buildHeatZones(
   incidents: IncidenteInstitucional[],
-  now = Date.now()
+  now = Date.now(),
+  windowMs = ANALYSIS_WINDOW_MS
 ): ZonaCalor[] {
   const recentIncidents = incidents.filter((incident) => {
     const reportedAt = new Date(incident.fechaReporte).getTime();
     return (
       Number.isFinite(reportedAt) &&
       now - reportedAt >= 0 &&
-      now - reportedAt <= ANALYSIS_WINDOW_MS &&
+      now - reportedAt <= windowMs &&
       incident.estado !== 'FALSA_ALARMA' &&
       Number.isFinite(incident.coordenadas.latitud) &&
       Number.isFinite(incident.coordenadas.longitud)

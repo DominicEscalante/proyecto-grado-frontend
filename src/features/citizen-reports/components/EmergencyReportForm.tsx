@@ -1,7 +1,7 @@
 // Formulario de Reporte de Emergencias: Triage de 1 toque, Etiquetas de contexto rapido y Despacho de Doble Velocidad
 // Exclusivamente con componentes de @heroicons/react y paleta global
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   TruckIcon,
   ExclamationTriangleIcon,
@@ -12,31 +12,20 @@ import {
   ExclamationCircleIcon,
   HeartIcon,
   CheckIcon,
-  CameraIcon,
   SignalIcon,
   ArrowPathIcon,
-  TrashIcon,
-  EyeIcon,
 } from '@heroicons/react/24/outline';
 import {
   TipoEmergenciaItem,
   EvidenciaArchivo,
   InstitucionDestino,
 } from '../types/citizen-reports.types.js';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '../../../components/ui/index.js';
+import { EvidenceUploader } from './EvidenceUploader.js';
 
 interface EmergencyReportFormProps {
+  institutionSelector: React.ReactNode;
+  gpsCard: React.ReactNode;
+  duplicateNotice: React.ReactNode;
   institucion: InstitucionDestino;
   incidentes: TipoEmergenciaItem[];
   tipoEmergenciaId: number;
@@ -122,6 +111,9 @@ const QUICK_TAGS = [
 ];
 
 export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
+  institutionSelector,
+  gpsCard,
+  duplicateNotice,
   institucion,
   incidentes,
   tipoEmergenciaId,
@@ -134,15 +126,11 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
   onChangeIndicaciones,
   onAdjuntarEvidencias,
   onRemoverEvidencia,
+  onReemplazarEvidencia,
   onSubmit,
 }) => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [manualNotes, setManualNotes] = useState<string>(indicacionesRapidas || '');
-  const [selectedForView, setSelectedForView] = useState<EvidenciaArchivo | null>(null);
-
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
-
   // Opciones de la cuadricula segun institucion
   const gridOptions = institucion === 'POLICIA' ? POLICIA_OPTIONS : BOMBEROS_OPTIONS;
 
@@ -155,10 +143,17 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
     return match ? Number(match.tipoEmergenciaId || match.id) : opt.fallbackId;
   };
 
-  // Incidente seleccionado actualmente para mostrar su descripcion breve
-  const selectedIncident = incidentes.find(
-    (inc) => (inc.tipoEmergenciaId || inc.id) === tipoEmergenciaId
-  );
+  // Cada opción visible usa el nombre que el catálogo asigna al ID enviado.
+  const catalogById = new Map(incidentes.map((item) => [Number(item.tipoEmergenciaId || item.id), item]));
+  const optionsById = new Map<number, GridOptionDef>();
+  for (const option of gridOptions) {
+    const id = resolveOptionId(option);
+    if (!optionsById.has(id)) optionsById.set(id, option);
+  }
+
+  const selectedId = Number(tipoEmergenciaId);
+  const selectedIncident = catalogById.get(selectedId);
+  const incidentName = selectedIncident?.nombre ?? optionsById.get(selectedId)?.title;
 
   // Alternar tag rapido y sincronizar inmediatamente con el texto de indicaciones
   const handleToggleTag = (tag: string) => {
@@ -188,111 +183,56 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
     onChangeIndicaciones(fullText);
   };
 
-  // Triggers de carga de fotos
-  const handleTriggerCamera = () => {
-    if (isSubmitting) return;
-    cameraInputRef.current?.click();
-  };
-
-  const handleTriggerGallery = () => {
-    if (isSubmitting) return;
-    galleryInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      onAdjuntarEvidencias(files);
-    }
-    e.target.value = '';
-  };
-
   return (
-    <div className="w-full space-y-3">
-      {/* Inputs ocultos de carga multimedia */}
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        disabled={isSubmitting}
-        onChange={handleFileChange}
-      />
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp,video/mp4"
-        className="hidden"
-        disabled={isSubmitting}
-        onChange={handleFileChange}
-      />
+    <div className="flex min-h-0 flex-1 flex-col gap-2 md:grid md:min-h-fit md:grid-cols-[minmax(0,2fr)_minmax(14rem,1fr)] md:auto-rows-[minmax(min-content,1fr)] md:gap-[clamp(1rem,2vw,1.5rem)]">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain md:overflow-visible lg:gap-4">
+        <section aria-labelledby="incident-details-title" className="flex shrink-0 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm sm:p-2 md:p-2.5 lg:p-4">
+          <h2 id="incident-details-title" className="sr-only">Datos del incidente</h2>
+          {institutionSelector}
 
-      {/* Tarjeta Contenedora Principal */}
-      <div className="w-full bg-white rounded-2xl border border-stone-200/90 p-3.5 sm:p-4 shadow-2xs space-y-3.5">
-        {/* PASO 2: Tipo de Incidente en Grid de 1 Toque (Cuadricula 2x2) */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-stone-800 tracking-tight">
-              Tipo de Incidente
-            </label>
-            <span className="text-[10px] text-stone-400 font-medium">
-              1 Toque
-            </span>
-          </div>
+          <fieldset className="min-w-0">
+            <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-600">Tipo de incidente</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {Array.from(optionsById, ([optId, opt]) => {
+                const isSelected = selectedId === optId;
+                const catalogName = catalogById.get(optId)?.nombre;
+                const IconComp = opt.icon;
 
-          <div className="grid grid-cols-2 gap-2.5">
-            {gridOptions.map((opt) => {
-              const optId = resolveOptionId(opt);
-              const isSelected = tipoEmergenciaId === optId;
-              const IconComp = opt.icon;
-
-              return (
-                <button
-                  key={opt.title}
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => onSelectTipoEmergencia(optId)}
-                  className={`p-3 rounded-xl flex flex-col items-start justify-center transition-all select-none cursor-pointer text-left ${
-                    isSelected
-                      ? 'border-2 border-[#143601] bg-emerald-50/70 text-[#143601] shadow-2xs ring-1 ring-[#143601]/20 font-bold'
-                      : 'border border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50 font-medium'
-                  }`}
-                >
-                  <IconComp
-                    className={`w-5 h-5 mb-1.5 ${
-                      isSelected ? 'text-[#143601] stroke-[2.2]' : 'text-stone-500 stroke-[1.8]'
+                return (
+                  <button
+                    key={optId}
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => onSelectTipoEmergencia(optId)}
+                    aria-pressed={isSelected}
+                    className={`flex min-h-11 items-center gap-1.5 rounded-md border p-2 text-left md:px-3 lg:min-h-12 text-xs font-medium leading-tight lg:text-sm disabled:opacity-60 ${
+                      isSelected
+                        ? institucion === 'BOMBEROS'
+                          ? 'border-red-700 bg-red-50/70 text-red-950'
+                          : 'border-emerald-800 bg-emerald-50/70 text-emerald-950'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
-                  />
-                  <span className="text-xs leading-tight tracking-tight">
-                    {opt.title}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                  >
+                    <IconComp className="h-4 w-4 shrink-0 lg:h-5 lg:w-5" />
+                    <span className="min-w-0 break-words">{catalogName ?? opt.title}</span>
+                  </button>
+                );
+              })}
+              </div>
 
-          {/* Linea discreta con la descripcion del incidente seleccionado */}
-          {selectedIncident?.descripcion && (
-            <p className="text-[11px] text-stone-600 pt-0.5 leading-tight flex items-center gap-1.5 truncate">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#143601] shrink-0" />
-              <span className="truncate">{selectedIncident.descripcion}</span>
-            </p>
-          )}
-        </div>
+            {selectedIncident?.descripcion && (
+              <p aria-live="polite" className="mt-1.5 whitespace-pre-wrap break-words rounded-md border border-slate-200 bg-slate-100 px-2.5 py-1.5 text-xs leading-snug text-slate-600 lg:text-sm">
+                {selectedIncident.descripcion}
+              </p>
+            )}
+          </fieldset>
+        </section>
 
-        {/* PASO 3: Contexto Rapido y Evidencia (Opcional - Patron Doble Velocidad) */}
-        <div className="space-y-2 pt-1 border-t border-stone-100">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-stone-800 tracking-tight">
-              Evidencia y Contexto (Opcional)
-            </label>
-            <span className="text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full font-medium">
-              Opcional · No detiene el envío SOS
-            </span>
-          </div>
+        <section aria-labelledby="report-context-title" className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm sm:p-2 md:gap-2 md:p-2.5 lg:p-4 flex-1 max-md:shrink-0">
+          <h2 id="report-context-title" className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+            Contexto <span className="font-normal normal-case tracking-normal">(opcional)</span>
+          </h2>
 
-          {/* Pildoras de Situacion de 1 Toque (Quick-Tags sin teclear) */}
           <div className="flex flex-wrap gap-1.5">
             {QUICK_TAGS.map((tag) => {
               const isActive = selectedTags.includes(tag);
@@ -301,17 +241,18 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
                   key={tag}
                   type="button"
                   disabled={isSubmitting}
+                  aria-pressed={isActive}
                   onClick={() => handleToggleTag(tag)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all select-none cursor-pointer flex items-center gap-1 ${
+                  className={`flex min-h-7 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium disabled:opacity-60 ${
                     isActive
-                      ? 'bg-emerald-100/90 border border-emerald-300 text-[#143601] shadow-2xs'
-                      : 'bg-white border border-stone-200 text-stone-700 hover:border-stone-300 hover:bg-stone-50'
+                      ? 'border border-emerald-700 bg-emerald-50 text-emerald-950'
+                      : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
                   {isActive ? (
-                    <CheckIcon className="w-3.5 h-3.5 text-[#143601] stroke-[2.5]" />
+                    <CheckIcon className="w-3.5 h-3.5 text-[#0F291E] stroke-[2.5]" />
                   ) : (
-                    <span className="text-stone-400 font-bold">+</span>
+                    <span className="text-slate-400 font-bold">+</span>
                   )}
                   <span>{tag}</span>
                 </button>
@@ -319,163 +260,87 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
             })}
           </div>
 
-          {/* Bloque Horizontal Compacto: Foto (col-4) + Textarea (col-8) */}
-          <div className="grid grid-cols-12 gap-2.5 items-stretch pt-1">
-            {/* Columna Izquierda: Adjuntar Foto */}
-            <div className="col-span-4 flex flex-col justify-stretch">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    disabled={isSubmitting}
-                    className={`w-full h-full min-h-[76px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-2 transition-all cursor-pointer select-none group ${
-                      evidencias.length > 0
-                        ? 'border-[#143601] bg-emerald-50/50 text-[#143601]'
-                        : 'border-stone-300 hover:border-[#143601] bg-stone-50/70 hover:bg-stone-100/60 text-stone-600 hover:text-[#143601]'
-                    }`}
-                  >
-                    {evidencias.length > 0 && evidencias[0].tipo === 'image' ? (
-                      <div className="relative w-7 h-7 rounded-md overflow-hidden mb-1 border border-[#143601]/40">
-                        <img
-                          src={evidencias[0].previewUrl}
-                          alt="Evidencia"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <CameraIcon className="w-5 h-5 mb-1 group-hover:scale-110 transition-transform stroke-[1.8]" />
-                    )}
+          <EvidenceUploader
+            evidencias={evidencias}
+            onAdjuntar={onAdjuntarEvidencias}
+            onRemover={onRemoverEvidencia}
+            onReemplazar={onReemplazarEvidencia}
+            disabled={isSubmitting}
+          />
 
-                    <span className="text-[10px] font-bold text-center leading-tight">
-                      {evidencias.length > 0
-                        ? `${evidencias.length} ${evidencias.length === 1 ? 'Foto' : 'Fotos'}`
-                        : 'Adjuntar Foto'}
-                    </span>
-                    <span className="text-[9px] text-stone-400 text-center leading-tight">
-                      {evidencias.length > 0 ? 'Toca p/ ver' : 'Cámara/Galería'}
-                    </span>
-                  </button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent
-                  align="start"
-                  sideOffset={4}
-                  className="w-48 rounded-xl bg-white border border-stone-200 shadow-xl p-1 z-50 animate-fadeIn"
-                >
-                  <DropdownMenuItem
-                    onClick={handleTriggerCamera}
-                    className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-stone-800 hover:bg-stone-100 cursor-pointer"
-                  >
-                    <CameraIcon className="w-4 h-4 text-[#143601] stroke-[2]" />
-                    <span>Tomar foto (Cámara)</span>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem
-                    onClick={handleTriggerGallery}
-                    className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-stone-800 hover:bg-stone-100 cursor-pointer"
-                  >
-                    <EyeIcon className="w-4 h-4 text-[#143601] stroke-[2]" />
-                    <span>Subir de la galería</span>
-                  </DropdownMenuItem>
-
-                  {evidencias.length > 0 && (
-                    <>
-                      <DropdownMenuSeparator className="my-1 bg-stone-100" />
-                      <DropdownMenuItem
-                        onClick={() => setSelectedForView(evidencias[0])}
-                        className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-stone-800 hover:bg-stone-100 cursor-pointer"
-                      >
-                        <EyeIcon className="w-4 h-4 text-stone-600 stroke-[2]" />
-                        <span>Ver foto actual</span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem
-                        onClick={() => onRemoverEvidencia(evidencias[0].id)}
-                        className="flex items-center gap-2 py-2 px-2.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer"
-                      >
-                        <TrashIcon className="w-4 h-4 text-rose-600 stroke-[2]" />
-                        <span>Quitar foto</span>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Columna Derecha: Indicaciones Rapidas Textarea */}
-            <div className="col-span-8 flex flex-col justify-stretch">
-              <textarea
-                id="indicaciones-rapidas"
-                rows={2}
-                disabled={isSubmitting}
-                value={manualNotes}
-                onChange={handleManualNotesChange}
-                placeholder="Calle de referencia, color de vehículo o detalles..."
-                className="w-full h-full min-h-[76px] p-2 text-xs text-stone-800 bg-stone-50/60 focus:bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#143601]/20 focus:border-[#143601] placeholder:text-stone-400 resize-none transition-colors leading-relaxed"
-              />
-            </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <label htmlFor="indicaciones-rapidas" className="text-xs font-medium text-slate-800">Observaciones</label>
+            <textarea
+              id="indicaciones-rapidas"
+              rows={2}
+              maxLength={1800}
+              disabled={isSubmitting}
+              value={manualNotes}
+              onChange={handleManualNotesChange}
+              placeholder="Dirección de referencia o detalles…"
+              className="min-h-11 w-full resize-none rounded-md border border-slate-300 bg-white p-2 text-base leading-tight text-slate-900 placeholder:text-slate-500 focus:border-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-800 disabled:bg-slate-50 flex-1 md:min-h-14 md:text-sm"
+            />
           </div>
-        </div>
+          <p className="hidden text-xs text-slate-600 md:block">Puedes adjuntar fotos o videos MP4 y MOV de hasta 10 MB por archivo.</p>
+        </section>
       </div>
 
-      {/* Banner de Mensaje de Error */}
-      {errorMessage && (
-        <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2 text-rose-800 text-xs">
-          <ExclamationTriangleIcon className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-          <p className="font-medium leading-tight">{errorMessage}</p>
-        </div>
-      )}
-
-      {/* PASO 5: Boton de Accion Critica (SOS Inmediato) */}
-      <div className="space-y-1.5 pt-1">
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={onSubmit}
-          className="w-full h-14 bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-red-400 text-white font-black text-base sm:text-lg tracking-wider uppercase rounded-xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2.5 cursor-pointer select-none"
-        >
-          {isSubmitting ? (
-            <>
-              <ArrowPathIcon className="w-6 h-6 animate-spin text-white" />
-              <span>{submittingStep || 'Despachando SOS...'}</span>
-            </>
-          ) : (
-            <>
-              <SignalIcon className="w-6 h-6 stroke-[2.4] animate-pulse text-white" />
-              <span>ENVIAR ALERTA SOS</span>
-            </>
-          )}
-        </button>
-
-        <p className="text-[11px] text-stone-500 text-center font-medium leading-tight select-none">
-          Despacho inmediato con tu ubicación GPS actual
-        </p>
-      </div>
-
-      {/* Dialog para Visualizar la Foto */}
-      {selectedForView && (
-        <Dialog open={!!selectedForView} onOpenChange={(open) => !open && setSelectedForView(null)}>
-          <DialogContent className="max-w-sm p-4 rounded-2xl bg-white border border-stone-200 shadow-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-sm font-bold text-stone-900 flex items-center gap-1.5">
-                <CameraIcon className="w-4 h-4 text-[#143601]" />
-                <span>Foto de Evidencia</span>
-              </DialogTitle>
-              <DialogDescription className="text-xs text-stone-500 font-mono truncate">
-                {selectedForView.file.name} · {selectedForView.tamanoFormateado}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="mt-2 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 flex items-center justify-center max-h-[60vh]">
-              <img
-                src={selectedForView.previewUrl}
-                alt={selectedForView.file.name}
-                className="w-full h-auto max-h-[55vh] object-contain"
-              />
+      <aside className="flex min-w-0 shrink-0 flex-col gap-2.5 lg:gap-4">
+        <div className="hidden md:block">{gpsCard}</div>
+        <section aria-label="Resumen y envío" className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2 md:flex-1 md:p-2.5 md:shadow-sm lg:p-4">
+          <h2 className="sr-only text-[11px] font-semibold uppercase tracking-wider text-slate-600 md:not-sr-only">Resumen y envío</h2>
+          <dl className="grid grid-cols-[repeat(3,minmax(0,1fr))] border-slate-200 text-xs max-md:divide-x max-md:divide-slate-200 md:block md:divide-y md:divide-slate-200 md:border-y lg:text-sm">
+            <div className="py-1.5 max-md:space-y-0.5 max-md:px-1.5 md:grid md:grid-cols-2 md:gap-2">
+              <dt className="text-slate-600">Institución</dt>
+              <dd className="break-words font-medium text-slate-900">{institucion === 'POLICIA' ? 'Policía' : 'Bomberos'}</dd>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+            <div className="py-1.5 max-md:space-y-0.5 max-md:px-1.5 md:grid md:grid-cols-2 md:gap-2">
+              <dt className="text-slate-600">Tipo de incidente</dt>
+              <dd className="break-words font-medium text-slate-900">{incidentName ?? 'Por seleccionar'}</dd>
+            </div>
+            <div className="py-1.5 max-md:space-y-0.5 max-md:px-1.5 md:grid md:grid-cols-2 md:gap-2">
+              <dt className="text-slate-600">Evidencia</dt>
+              <dd className="font-medium text-slate-900">
+                {evidencias.length ? `${evidencias.length} ${evidencias.length === 1 ? 'archivo' : 'archivos'}` : 'Sin adjuntos'}
+              </dd>
+            </div>
+          </dl>
+          {errorMessage && (
+            <div role="alert" className="p-2.5 rounded-md bg-rose-50 border border-rose-200 flex items-start gap-2 text-rose-800 text-xs">
+              <ExclamationTriangleIcon className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+              <p className="font-medium leading-tight">{errorMessage}</p>
+            </div>
+          )}
+
+          <div className="space-y-1 md:mt-auto">
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={onSubmit}
+              className="flex min-h-12 w-full items-center lg:min-h-14 justify-center gap-2 rounded-lg bg-red-700 px-3 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-800 disabled:bg-red-700/60"
+            >
+              {isSubmitting ? (
+                <>
+                  <ArrowPathIcon className="h-5 w-5 text-white" />
+                  <span>{submittingStep || 'Despachando SOS...'}</span>
+                </>
+              ) : (
+                <>
+                  <SignalIcon className="h-5 w-5 stroke-[2.4] text-white" />
+                  <span>Enviar alerta SOS</span>
+                </>
+              )}
+            </button>
+
+            <p className="hidden text-center text-xs text-slate-600 md:block">
+              Despacho inmediato con tu ubicación GPS actual
+            </p>
+          </div>
+
+          {duplicateNotice}
+        </section>
+      </aside>
+
     </div>
   );
 };

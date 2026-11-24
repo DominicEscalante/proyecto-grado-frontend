@@ -1,77 +1,43 @@
-// Encabezado superior compacto para la vista ciudadana con estado GPS integrado
-// Elimina la barra verde suelta y mantiene ergonomia mobile-first limpia sin emojis.
-
-import React from 'react';
 import { AppLogo } from '../../../components/ui/AppLogo.js';
 import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import { GpsLocationState } from '../types/citizen-reports.types.js';
+import type { CitizenTab, GpsLocationState } from '../types/citizen-reports.types.js';
+import { CitizenBottomNav } from './CitizenBottomNav.js';
 
 interface CitizenHeaderProps {
-  gps: GpsLocationState & {
-    sincronizarGps: () => void;
-    usarCoordenadasPruebaLaPaz: () => void;
-  };
-  onGoHome?: () => void;
+  gps: GpsLocationState & { sincronizarGps: () => void };
+  activeTab: CitizenTab;
+  onTabChange: (tab: CitizenTab) => void;
 }
 
-export const CitizenHeader: React.FC<CitizenHeaderProps> = ({ gps, onGoHome }) => {
+export const CitizenHeader = ({ gps, activeTab, onTabChange }: CitizenHeaderProps) => {
   const isSync = gps.status === 'synchronized' && gps.coords;
-  const isLocating = gps.status === 'obtaining';
+  const statusLabel = gps.status === 'obtaining'
+    ? 'Ubicando…'
+    : isSync ? 'GPS sincronizado' : 'Sin GPS';
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-[#143601] backdrop-blur-md border-b border-white/15 px-3.5 sm:px-4 py-2.5 shadow-2xs">
-      <div className="max-w-md mx-auto flex items-center justify-between">
-        {/* Marca: Isotipo en verde institucional + Ampar / Sistema de Emergencias */}
-        <div
-          onClick={onGoHome}
-          className="flex items-center gap-2.5 cursor-pointer select-none group"
-          title="Ampar - Sistema de Emergencias"
-        >
+    <header className="z-30 shrink-0 border-b border-white/10 bg-[#0F291E] text-white">
+      <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-3 px-3 md:grid md:h-14 md:px-6 md:grid-cols-[1fr_auto_1fr]">
+        <button type="button" onClick={() => onTabChange('reportar')} className="flex w-fit items-center gap-2 rounded-md text-left">
           <AppLogo size={26} color="#ffffff" showText={false} />
-          <div className="flex flex-col justify-center">
-            <h1 className="text-base font-black tracking-tight text-white leading-none group-hover:text-emerald-100 transition-colors">
-              Ampar
-            </h1>
-            <p className="text-[10px] text-white/70 font-medium tracking-tight leading-tight mt-0.5">
-              Sistema de Emergencias
-            </p>
-          </div>
-        </div>
+          <span>
+            <span className="block text-base font-semibold leading-tight">Ampar</span>
+            <span className="block text-[11px] text-emerald-100/80">Sistema de Emergencias</span>
+          </span>
+        </button>
 
-        {/* Píldora de Estado GPS Integrada (Sustituye a la barra verde suelta) */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <div
-            onClick={gps.sincronizarGps}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold select-none transition-all cursor-pointer ${
-              isSync
-                ? 'bg-emerald-50 border-emerald-200/80 text-emerald-800'
-                : 'bg-amber-50 border-amber-200/80 text-amber-800'
-            }`}
-            title={
-              isSync
-                ? `GPS Sincronizado (${gps.coords?.latitud.toFixed(4)}, ${gps.coords?.longitud.toFixed(4)}) - Toca para actualizar`
-                : 'Buscando señal GPS... Toca para sincronizar'
-            }
-          >
-            <MapPinIcon className={`w-3.5 h-3.5 shrink-0 ${isSync ? 'text-emerald-600' : 'text-amber-600'}`} />
-            <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isSync ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-            <span className="text-[11px] font-medium leading-none">
-              {isLocating ? 'Ubicando...' : isSync ? 'GPS Sincronizado' : 'Sin GPS'}
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                gps.sincronizarGps();
-              }}
-              className="p-0.5 rounded-full hover:bg-stone-200/60 transition-colors ml-0.5 text-stone-600"
-              title="Recalibrar ubicación GPS"
-              aria-label="Recalibrar ubicación GPS"
-            >
-              <ArrowPathIcon className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
+        <CitizenBottomNav activeTab={activeTab} onTabChange={onTabChange} inHeader />
+
+        <button
+          type="button"
+          onClick={gps.sincronizarGps}
+          aria-label={`Actualizar ubicación. ${statusLabel}`}
+          className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium hover:bg-white/10 md:justify-self-end"
+        >
+          <MapPinIcon aria-hidden="true" className={`h-4 w-4 ${isSync ? 'text-emerald-300' : 'text-amber-200'}`} />
+          <span>{statusLabel}</span>
+          <ArrowPathIcon aria-hidden="true" className="h-3.5 w-3.5 text-emerald-100/80" />
+        </button>
       </div>
     </header>
   );
