@@ -26,7 +26,6 @@ export async function signInWithPasskey(): Promise<{ user: User; token: string }
   const token = data?.session?.token;
   if (error || !token) throw new Error('No se pudo iniciar sesión con la clave de acceso.');
 
-  // Resolve the same domain user as normal login using only the new session.
   const response = await apiClient.get<ApiResponse<{ user: User }>>('/api/auth/me', {
     headers: { Authorization: `Bearer ${token}` },
     skipStoredAuth: true,

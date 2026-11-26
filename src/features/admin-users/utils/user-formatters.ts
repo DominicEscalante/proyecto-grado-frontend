@@ -1,9 +1,5 @@
 import { AdminUserItem } from '../types/admin-users.types.js';
 
-/**
- * Obtiene las 2 iniciales en mayusculas para el avatar del usuario.
- * Ignora prefijos comunes como 'Sgto.', 'Tte.', 'Cabo', 'Admin'.
- */
 export function getInitials(name: string): string {
   if (!name || name.trim() === '') return 'US';
   
@@ -18,9 +14,6 @@ export function getInitials(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-/**
- * Formatea una fecha ISO a texto legible en español.
- */
 export function formatDate(dateString?: string | Date): string {
   if (!dateString) return 'Sin fecha';
   try {
@@ -37,9 +30,6 @@ export function formatDate(dateString?: string | Date): string {
   }
 }
 
-/**
- * Genera y descarga un archivo CSV con la lista de usuarios.
- */
 export function exportUsersToCsv(users: AdminUserItem[]): void {
   const headers = [
     'ID Sistema',

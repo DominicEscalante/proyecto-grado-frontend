@@ -120,7 +120,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         <div>
           <label htmlFor="registro-password" className={labelClass}>Contraseña</label>
           <div className="relative">
-            <input id="registro-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Mínimo 8 caracteres" className={`${inputClass} pr-10`} aria-invalid={!!errors.password} aria-describedby={errors.password ? 'registro-password-error' : undefined} {...register('password')} />
+            <input id="registro-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Mínimo 15 caracteres" className={`${inputClass} pr-10`} aria-invalid={!!errors.password} aria-describedby={errors.password ? 'registro-password-error' : undefined} {...register('password')} />
             <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Ocultar contraseñas' : 'Mostrar contraseñas'} aria-pressed={showPassword} className="absolute right-3 top-3 rounded text-stone-400 hover:text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-600">
               {showPassword ? <EyeSlashIcon className="h-5 w-5" aria-hidden="true" /> : <EyeIcon className="h-5 w-5" aria-hidden="true" />}
             </button>

@@ -1,4 +1,3 @@
-// Hook de logica de negocio y estado para el formulario de reporte de emergencias (Feature-First)
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
@@ -31,7 +30,6 @@ const EVIDENCE_TYPES = new Set([
 export function useCitizenReportForm() {
   const gps = useGpsLocation();
 
-  // Estado del formulario
   const [institucion, setInstitucion] = useState<InstitucionDestino>('BOMBEROS');
   const [catalogoTotal, setCatalogoTotal] = useState<TipoEmergenciaItem[]>(CATALOGO_EMERGENCIAS_DEFAULT);
   const [tipoEmergenciaId, setTipoEmergenciaId] = useState<number>(4); // Default: Incendio Estructural
@@ -40,7 +38,6 @@ export function useCitizenReportForm() {
 
   const previousEvidence = useRef<EvidenciaArchivo[]>([]);
 
-  // Estados de proceso y feedback
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submittingStep, setSubmittingStep] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -62,19 +59,16 @@ export function useCitizenReportForm() {
     }
   };
 
-  // Tipos filtrados por la institucion activa
   const incidentesFiltrados = useMemo(() => {
     return filtrarIncidentesPorInstitucion(catalogoTotal, institucion);
   }, [catalogoTotal, institucion]);
 
-  // Sincronizar catalogo desde la API al montar
   useEffect(() => {
     let isMounted = true;
     getCatalogoEmergenciasApi()
       .then((data) => {
         if (isMounted && data && data.length > 0) {
           setCatalogoTotal(data);
-          // Si el tipo actual no pertenece a la institucion actual, asignar el primero valido
           const filtrados = filtrarIncidentesPorInstitucion(data, institucion);
           if (filtrados.length > 0) {
             const existe = filtrados.some((i) => (i.tipoEmergenciaId || i.id) === tipoEmergenciaId);
@@ -93,7 +87,6 @@ export function useCitizenReportForm() {
     };
   }, []);
 
-  // Al cambiar institucion, seleccionar por defecto el primer incidente de esa lista
   const cambiarInstitucion = useCallback(
     (nuevaInst: InstitucionDestino) => {
       setInstitucion(nuevaInst);
@@ -107,7 +100,6 @@ export function useCitizenReportForm() {
     [catalogoTotal]
   );
 
-  // Adjuntar archivos de evidencia multimedia (Maximo 5 archivos, max 10MB c/u)
   const handleAdjuntarArchivos = useCallback(
     (files: FileList | File[] | null) => {
       if (!files) return;
@@ -124,13 +116,11 @@ export function useCitizenReportForm() {
       const nuevasEvidencias: EvidenciaArchivo[] = [];
 
       for (const file of archivosAProcesar) {
-        // Validar tamano (10MB)
         if (file.size > 10 * 1024 * 1024) {
           setErrorMessage(`El archivo "${file.name}" supera el tamaño máximo permitido de 10 MB.`);
           continue;
         }
 
-        // Validar tipo
         const esVideo = file.type.startsWith('video/');
         if (!EVIDENCE_TYPES.has(file.type)) {
           setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4, MOV, MP3, M4A, OGG, WAV o WebM de audio.`);
@@ -154,25 +144,21 @@ export function useCitizenReportForm() {
     [evidencias]
   );
 
-  // Remover un archivo adjunto y liberar memoria
   const handleRemoverEvidencia = useCallback((id: string) => {
     setEvidencias((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  // Reemplazar un archivo de evidencia especifico por un archivo nuevo
   const handleReemplazarEvidencia = useCallback(
     (targetId: string, files: FileList | File[] | null) => {
       if (!files) return;
       const file = Array.from(files)[0];
       if (!file) return;
 
-      // Validar tamano (10MB)
       if (file.size > 10 * 1024 * 1024) {
         setErrorMessage(`El archivo "${file.name}" supera el tamaño máximo permitido de 10 MB.`);
         return;
       }
 
-      // Validar tipo
       const esVideo = file.type.startsWith('video/');
       if (!EVIDENCE_TYPES.has(file.type)) {
         setErrorMessage(`El archivo "${file.name}" debe ser JPEG, PNG, WebP, MP4, MOV, MP3, M4A, OGG, WAV o WebM de audio.`);
@@ -200,7 +186,6 @@ export function useCitizenReportForm() {
     []
   );
 
-  // Mantener las vistas previas de los archivos que siguen adjuntos.
   useEffect(() => {
     const activeUrls = new Set(evidencias.map((item) => item.previewUrl));
     for (const item of previousEvidence.current) {
@@ -213,11 +198,9 @@ export function useCitizenReportForm() {
     previousEvidence.current.forEach((item) => URL.revokeObjectURL(item.previewUrl));
   }, []);
 
-  // Enviar alerta SOS
   const registrarReporte = async (incidentePrincipalId?: number | null) => {
     setErrorMessage(null);
 
-    // 1. Validar coordenadas GPS
     if (!gps.coords) {
       setErrorMessage(
         'Se requiere la sincronización GPS para enviar la alerta de auxilio. Si tu navegador no tiene GPS, pulsa en el banner para usar las coordenadas de prueba.'
@@ -229,7 +212,6 @@ export function useCitizenReportForm() {
       return;
     }
 
-    // 2. Validar tipo de incidente seleccionado
     const finalTipoId = Number(tipoEmergenciaId);
     const incidenteSeleccionado = incidentesFiltrados.find(
       (i) => (i.tipoEmergenciaId || i.id) === finalTipoId
@@ -240,7 +222,6 @@ export function useCitizenReportForm() {
       return;
     }
 
-    // 3. Formatear descripcion (minimo 5 caracteres para cumplir con esquema backend)
     if (/[^\P{Cc}\t\n\r]|[\u202A-\u202E\u2066-\u2069]/u.test(indicacionesRapidas)) {
       setErrorMessage('Las indicaciones contienen caracteres de control no permitidos.');
       return;
@@ -252,7 +233,6 @@ export function useCitizenReportForm() {
       }`;
     }
 
-    // 4. Preparar payload con tipos estrictos
     const payload = {
       institucion_destino: institucion,
       tipo_emergencia_id: finalTipoId,
@@ -287,20 +267,17 @@ export function useCitizenReportForm() {
     setSubmittingStep('Registrando alerta SOS...');
 
     try {
-      // 5. Registrar el reporte
       const reporteCreado = await crearReporteApi(payload);
 
       // El reporte queda confirmado antes de procesar la evidencia.
       const archivos = evidencias.map((e) => e.file);
       if (archivos.length) void uploadInBackground(reporteCreado.codigoTicket, archivos);
 
-      // 7. Exito: Notificar y limpiar campos
       setSuccessReport({
         ...reporteCreado,
         tipoEmergenciaNombre: incidenteSeleccionado.nombre,
       });
 
-      // 8. Guardar en cache local persistente para visualizacion inmediata en "Mis Alertas"
       try {
         const nuevoResumen: ReporteCiudadanoResumen = {
           reporteId: reporteCreado.reporteId,
@@ -327,7 +304,6 @@ export function useCitizenReportForm() {
         console.warn('No se pudo guardar reporte en caché local:', cacheErr);
       }
 
-      // Limpiar formulario para proximo envio
       setIndicacionesRapidas('');
       setEvidencias([]);
       setCoincidencia(null);

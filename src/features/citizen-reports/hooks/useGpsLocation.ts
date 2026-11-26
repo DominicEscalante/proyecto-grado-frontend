@@ -1,4 +1,3 @@
-// Hook para adquisicion y sincronizacion de ubicacion GPS en tiempo real
 
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -85,7 +84,6 @@ export function useGpsLocation() {
     );
   }, []);
 
-  // Forzar simulacion de coordenadas en La Paz para pruebas de desarrollo local
   const usarCoordenadasPruebaLaPaz = useCallback(() => {
     if (!import.meta.env.DEV) return;
     const coords: GpsCoordinates = {

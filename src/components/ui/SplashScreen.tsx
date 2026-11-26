@@ -18,14 +18,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
     >
       <MountainBackground />
 
-      {/* Espaciador superior */}
       <div className="w-full flex justify-end">
         <span className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">
           GAMLP · 2026
         </span>
       </div>
 
-      {/* Centro: Logo con animacion */}
       <div className="relative z-10 flex flex-col items-center">
         <AppLogo size={92} animated={true} />
 
@@ -39,7 +37,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         </div>
       </div>
 
-      {/* Pie de pantalla: Estado de carga */}
       <div className="relative z-10 flex flex-col items-center gap-2">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-white animate-bounce [animation-delay:-0.3s]"></span>

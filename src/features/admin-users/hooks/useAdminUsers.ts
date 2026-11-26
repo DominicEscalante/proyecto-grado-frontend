@@ -27,11 +27,9 @@ export function useAdminUsers() {
   const [activeFilter, setActiveFilter] = useState<RoleFilter>('ALL');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
 
-  // Master-Detail: usuario seleccionado e inspección
   const [selectedUser, setSelectedUser] = useState<AdminUserItem | null>(null);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
-  // Estado de modales complementarios
   const [modalState, setModalState] = useState<'none' | 'create' | 'edit' | 'status' | 'reset-password'>('none');
 
   const loadUsers = useCallback(async () => {
@@ -53,7 +51,6 @@ export function useAdminUsers() {
     loadUsers();
   }, [loadUsers]);
 
-  // Metricas calculadas en tiempo real para el resumen inline
   const metrics: UserMetrics = useMemo(() => {
     let citizens = 0;
     let police = 0;
@@ -77,22 +74,18 @@ export function useAdminUsers() {
     };
   }, [usersList]);
 
-  // Filtrado compuesto por Rol, Estado y Buscador
   const filteredUsers = useMemo(() => {
     return usersList.filter((u) => {
       const rolId = u.rol?.rolId;
 
-      // Filtro por Rol / Institucion
       if (activeFilter === 'CITIZEN' && rolId !== 1) return false;
       if (activeFilter === 'POLICE' && rolId !== 2) return false;
       if (activeFilter === 'FIREFIGHTER' && rolId !== 3) return false;
       if (activeFilter === 'ADMIN' && rolId !== 4) return false;
 
-      // Filtro por Estado (Activo / Suspendido)
       if (statusFilter === 'ACTIVE' && !u.estadoCuenta) return false;
       if (statusFilter === 'SUSPENDED' && u.estadoCuenta) return false;
 
-      // Filtro textual
       if (!searchTerm || searchTerm.trim() === '') return true;
       const term = searchTerm.toLowerCase().trim();
       return (
@@ -116,7 +109,6 @@ export function useAdminUsers() {
     }
   }, [filteredUsers, selectedUser]);
 
-  // Acciones sobre usuarios con notificaciones Sileo Toast
   const handleCreateOperator = async (data: CreateOperatorData) => {
     setActionLoading(true);
     setError(null);

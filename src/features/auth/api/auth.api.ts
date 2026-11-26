@@ -68,7 +68,6 @@ export async function logoutRequest(): Promise<void> {
   try {
     await apiClient.post('/api/auth/sign-out');
   } catch {
-    // Falla silenciosa si la sesion ya expiro
   } finally {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');

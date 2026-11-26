@@ -51,7 +51,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // Transicion visual suave para apreciar el logo creativo del sistema
       setTimeout(() => {
         setIsLoading(false);
       }, 700);

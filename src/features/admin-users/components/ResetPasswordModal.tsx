@@ -1,3 +1,4 @@
+import { nuevaPasswordSchema, passwordHint } from '../../auth/utils/password.schema.js';
 import React, { useState } from 'react';
 import {
   KeyIcon,
@@ -31,10 +32,8 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
 
   const generateRandomPassword = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
-    let result = '';
-    for (let i = 0; i < 10; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
+    const result = Array.from(bytes, byte => chars[byte % chars.length]).join('');
     setPassword(result);
     setConfirmPassword(result);
     setError(null);
@@ -56,8 +55,8 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
       return;
     }
 
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.');
+    if (!nuevaPasswordSchema.safeParse(password).success) {
+      setError(passwordHint);
       return;
     }
 
@@ -80,7 +79,6 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
         className="w-full max-w-md rounded-xl bg-white border border-stone-200 shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Cabecera del Modal */}
         <div className="p-4 sm:p-5 border-b border-stone-200 flex items-center justify-between bg-[#F8FAFC]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#245501]/10 border border-[#245501]/20 flex items-center justify-center text-[#245501]">
@@ -103,7 +101,6 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
           </button>
         </div>
 
-        {/* Formulario */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4">
           {error && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2 text-red-700 text-xs font-medium">
@@ -119,7 +116,6 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             </p>
           </div>
 
-          {/* Generador rápido */}
           <div className="flex items-center justify-between gap-2 pt-1">
             <span className="text-xs text-stone-700 font-medium">Contraseña:</span>
             <button
@@ -132,7 +128,6 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             </button>
           </div>
 
-          {/* Campo: Nueva Contraseña */}
           <div className="space-y-1">
             <label className="text-[11px] font-semibold text-stone-700 font-mono">
               Nueva Contraseña
@@ -140,9 +135,9 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             <div className="relative">
               <input
                 type="text"
-                value={password}
+                maxLength={128} value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 8 caracteres..."
+                placeholder="Mínimo 15 caracteres..."
                 className="w-full px-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-xs text-[#143601] placeholder-stone-400 font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors pr-9 font-semibold"
               />
               {password && (
@@ -162,21 +157,19 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             </div>
           </div>
 
-          {/* Campo: Confirmar Contraseña */}
           <div className="space-y-1">
             <label className="text-[11px] font-semibold text-stone-700 font-mono">
               Confirmar Nueva Contraseña
             </label>
             <input
               type="text"
-              value={confirmPassword}
+              maxLength={128} value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Reescribe la contraseña..."
               className="w-full px-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-xs text-[#143601] placeholder-stone-400 font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors font-semibold"
             />
           </div>
 
-          {/* Botones de acción */}
           <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-stone-200">
             <button
               type="button"

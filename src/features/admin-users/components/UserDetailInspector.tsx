@@ -76,7 +76,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
 
     return (
       <div className="flex flex-col h-full min-h-0">
-        {/* 1. Franja Superior Sutil con Fondo al 6% de Opacidad del Verde Institucional */}
         <div className="shrink-0 bg-[#245501]/[0.06] border-b border-stone-200/70 p-3 sm:p-3.5 space-y-2">
           <div className="flex items-start justify-between gap-2.5">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -103,9 +102,7 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
             )}
           </div>
 
-          {/* Badges de Rol, Estado y SEGIP con rounded-full */}
           <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-            {/* Badge de Rol */}
             {rolId === 2 && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
                 <ShieldCheckIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-700" />
@@ -131,7 +128,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </span>
             )}
 
-            {/* Badge de Estado Cuenta */}
             {user.estadoCuenta ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
@@ -144,7 +140,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </span>
             )}
 
-            {/* Verificación SEGIP */}
             {user.identidadVerificada ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold text-emerald-700 bg-white border border-emerald-200 shadow-2xs">
                 <CheckBadgeIcon className="w-3 h-3 text-emerald-600" />
@@ -158,11 +153,8 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
           </div>
         </div>
 
-        {/* 2. Cuerpo del Inspector */}
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 sm:p-3.5 space-y-3">
-          {/* Ficha de Datos Clave-Valor con Iconos Alineados a la Izquierda y divide-y */}
           <div className="rounded-lg bg-[#F8FAFC] border border-stone-200 divide-y divide-stone-200/60 overflow-hidden text-xs">
-            {/* CI con Copiado */}
             <div className="py-2 px-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
                 <IdentificationIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
@@ -196,7 +188,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </div>
             </div>
 
-            {/* Correo con Copiado */}
             <div className="py-2 px-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
                 <EnvelopeIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
@@ -224,7 +215,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </div>
             </div>
 
-            {/* Teléfono */}
             <div className="py-2 px-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
                 <PhoneIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
@@ -233,7 +223,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               <span className="font-mono text-[#143601] font-semibold">{user.telefono || 'No registrado'}</span>
             </div>
 
-            {/* Rango e Institución (si aplica) */}
             {user.institucion && (
               <div className="py-2 px-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
@@ -246,7 +235,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </div>
             )}
 
-            {/* Fecha de Alta */}
             <div className="py-2 px-3 flex items-center justify-between gap-2 text-xs">
               <div className="flex items-center gap-2 text-stone-600 font-medium">
                 <CalendarIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
@@ -258,13 +246,11 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
             </div>
           </div>
 
-          {/* 3. Acciones de Administración (Grid de 2 Columnas + Botón de Peligro Limpio Abajo) */}
           <div className="space-y-2 pt-0.5">
             <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-stone-400 px-0.5">
               Acciones de Administración
             </p>
 
-            {/* Grid 2 Columnas: Editar y Restablecer */}
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -285,7 +271,6 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </button>
             </div>
 
-            {/* Suspender / Reactivar Ocupando Ancho Completo con Diseño Ejecutivo */}
             {isSuspended ? (
               <button
                 type="button"
@@ -313,21 +298,17 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
 
   return (
     <>
-      {/* 1. Vista Desktop: Panel Lateral en lg:col-span-4 con altura completa */}
       <div className="hidden lg:flex flex-col h-full min-h-0 rounded-xl bg-white border border-stone-200 overflow-hidden shadow-xs">
         {renderContent(false)}
       </div>
 
-      {/* 2. Vista Móvil: Drawer Deslizable */}
       {isMobileDrawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
             onClick={onCloseDrawer}
           />
 
-          {/* Drawer Sheet en Blanco */}
           <div className="fixed inset-y-0 right-0 max-w-sm w-full bg-white border-l border-stone-200 overflow-y-auto shadow-2xl animate-drawerSlideIn">
             {renderContent(true)}
           </div>

@@ -1,4 +1,3 @@
-// Hook para la gestion del estado de reportes e incidentes institucionales
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import axios from 'axios';
@@ -26,14 +25,12 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
   const refreshQueued = useRef(false);
   const updating = useRef(new Set<number>());
 
-  // Filtros operativos
   const [institucionFiltro, setInstitucionFiltro] = useState<'TODAS' | InstitucionTipo>(
     initialInstitucionFilter || 'TODAS'
   );
   const [estadoFiltro, setEstadoFiltro] = useState<'TODOS' | 'ACTIVOS' | EstadoIncidente>('TODOS');
   const [busqueda, setBusqueda] = useState<string>('');
 
-  // Carga inicial de incidentes
   const cargarIncidentes: (initial?: boolean) => Promise<void> = useCallback(async (initial = false) => {
     if (polling.current) { refreshQueued.current = true; return; }
     polling.current = true;
@@ -64,7 +61,6 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
       setIncidents(data);
       setError(null);
       if (data.length > 0) {
-        // Seleccionar por defecto el primer incidente relevante (ej. LPZ-2024-0892 si existe)
         const principal = data[0];
         setSelectedIncidentId((prev) => prev ?? principal.id);
       }
@@ -90,12 +86,8 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
       while (!controller.signal.aborted) {
         try {
           const headers: Record<string, string> = {};
-          const token = localStorage.getItem('auth_token');
+          const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
           if (token) headers.Authorization = `Bearer ${token}`;
-          if (import.meta.env.DEV) {
-            const user = JSON.parse(localStorage.getItem('auth_user') || 'null');
-            if (user?.id) { headers['x-dev-user-id'] = user.id; headers['x-dev-rol-id'] = String(user.rol_id); }
-          }
           const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/operador/reportes/eventos`, { headers, credentials: 'include', signal: controller.signal });
           if (!response.ok || !response.body) throw new Error('Canal de eventos no disponible');
           const reader = response.body.getReader();
@@ -128,7 +120,6 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
     setSoundEnabled(true);
   }, []);
 
-  // Actualizacion de estado
   const cambiarEstadoIncidente = useCallback(
     async (id: number, nuevoEstado: EstadoIncidente) => {
       if (updating.current.has(id)) return;
@@ -136,7 +127,6 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
       if (!targetInc) return;
       updating.current.add(id);
       setStatusConflict(null);
-      // Actualizacion optimista en el estado local
       const horaActual = new Date().toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
@@ -176,21 +166,17 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
     [incidents, cargarIncidentes]
   );
 
-  // Incidente seleccionado
   const selectedIncident = useMemo(() => {
     return incidents.find((inc) => inc.id === selectedIncidentId && inc.estado !== 'ATENDIDO') || null;
   }, [incidents, selectedIncidentId]);
 
-  // Lista filtrada
   const filteredIncidents = useMemo(() => {
     return incidents.filter((inc) => {
       if (inc.estado === 'ATENDIDO') return false;
-      // Filtro de institucion
       if (institucionFiltro !== 'TODAS' && inc.institucion !== institucionFiltro) {
         return false;
       }
 
-      // Filtro de estado
       if (estadoFiltro === 'ACTIVOS') {
         if (inc.estado === 'FALSA_ALARMA') {
           return false;
@@ -199,7 +185,6 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
         return false;
       }
 
-      // Busqueda de texto
       if (busqueda.trim()) {
         const query = busqueda.toLowerCase().trim();
         const coincideTitulo = inc.titulo.toLowerCase().includes(query);
@@ -218,7 +203,6 @@ export function useInstitutionReports(initialInstitucionFilter?: InstitucionTipo
     });
   }, [incidents, institucionFiltro, estadoFiltro, busqueda]);
 
-  // Conteo total de incidentes activos
   const activeCount = useMemo(() => {
     return incidents.filter(
       (inc) => inc.estado === 'PENDIENTE' || inc.estado === 'EN_CURSO'

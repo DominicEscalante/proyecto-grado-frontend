@@ -56,7 +56,6 @@ export const GpsStatusBar: React.FC<GpsStatusBarProps> = ({ gps }) => {
           </div>
         </div>
 
-        {/* Detalle Desplegable Opcional */}
         {showDetails && (
           <div className="mt-1 px-3.5 py-2 bg-emerald-950/90 border border-emerald-500/20 rounded-lg text-emerald-200 text-[11px] font-mono flex items-center justify-between">
             <div>

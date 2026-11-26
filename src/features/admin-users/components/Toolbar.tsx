@@ -51,7 +51,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
   return (
     <div className="p-2 sm:p-2.5 border-b border-stone-200 bg-white flex flex-col xl:flex-row xl:items-center justify-between gap-2 sm:gap-2.5">
-      {/* 1. Izquierda: Segmented Control Unificado (Estilo Vercel/Linear con bg-stone-100 y tabs rounded-md) */}
       <div className="bg-stone-100 p-0.5 rounded-lg inline-flex items-center gap-1 overflow-x-auto no-scrollbar max-w-full">
         {roleTabs.map((tab) => {
           const Icon = tab.icon;
@@ -88,9 +87,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         })}
       </div>
 
-      {/* 2. Derecha: Buscador, Select de Estado con ChevronDownIcon Limpio y Botón Refrescar */}
       <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full xl:w-auto">
-        {/* Buscador sobre fondo claro */}
         <div className="relative flex-1 sm:w-56 min-w-[170px]">
           <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
           <input
@@ -112,7 +109,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
 
-        {/* Filtro por Estado con Componente Shadcn/UI Select */}
         <Select
           value={statusFilter}
           onValueChange={(val) => onSelectStatusFilter(val as StatusFilter)}
@@ -127,7 +123,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </SelectContent>
         </Select>
 
-        {/* Botón Refrescar */}
         <button
           type="button"
           onClick={onRefresh}

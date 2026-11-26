@@ -56,7 +56,6 @@ export const CitizenAlertsList: React.FC<CitizenAlertsListProps> = ({ onNuevoRep
 
   return (
     <div className="w-full space-y-4">
-      {/* Header de Seccion */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-extrabold text-[#143601]">
@@ -78,7 +77,6 @@ export const CitizenAlertsList: React.FC<CitizenAlertsListProps> = ({ onNuevoRep
         </button>
       </div>
 
-      {/* Manejo de Error */}
       {error && (
         <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
           <span>{error}</span>
@@ -92,7 +90,6 @@ export const CitizenAlertsList: React.FC<CitizenAlertsListProps> = ({ onNuevoRep
         </div>
       )}
 
-      {/* Estado Vacio */}
       {!isLoading && reportes.length === 0 && !error && (
         <div className="p-8 rounded-2xl bg-white border border-stone-200 text-center space-y-3">
           <div className="w-12 h-12 rounded-full bg-stone-100 mx-auto flex items-center justify-center text-stone-400">
@@ -116,7 +113,6 @@ export const CitizenAlertsList: React.FC<CitizenAlertsListProps> = ({ onNuevoRep
         </div>
       )}
 
-      {/* Listado de Reportes */}
       <div className="space-y-3">
         {reportes.map((rep) => {
           const incidentName = typeof rep.tipoEmergencia === 'object' && rep.tipoEmergencia !== null

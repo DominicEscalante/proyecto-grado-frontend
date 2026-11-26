@@ -1,4 +1,3 @@
-// Cliente API para reportes e incidentes de instituciones
 
 import { apiClient } from '../../../api/client.js';
 import {
@@ -6,10 +5,6 @@ import {
   EstadoIncidente,
 } from '../types/institution-reports.types.js';
 
-/**
- * Obtiene la lista de incidentes institucionales desde la base de datos real.
- * La consola operativa solo muestra reportes confirmados por el servidor.
- */
 export async function getInstitutionalIncidentsApi(institucion?: 'POLICIA' | 'BOMBEROS'): Promise<IncidenteInstitucional[]> {
   try {
     const res = await apiClient.get('/api/operador/reportes', {
@@ -42,9 +37,6 @@ export async function getInstitutionalHistoryApi(pagina: number, orden: 'recient
   return response.data.data;
 }
 
-/**
- * Actualiza el estado operativo de un incidente en la base de datos real.
- */
 export async function actualizarEstadoIncidenteApi(
   idOrTicket: number | string,
   nuevoEstado: EstadoIncidente,

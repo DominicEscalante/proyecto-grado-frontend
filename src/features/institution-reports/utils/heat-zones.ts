@@ -73,7 +73,6 @@ function findClusters(points: IncidenteInstitucional[]): IncidenteInstitucional[
   return clusters;
 }
 
-/** Builds small, data-driven hotspot zones; isolated incidents remain point markers. */
 export function buildHeatZones(
   incidents: IncidenteInstitucional[],
   now = Date.now(),

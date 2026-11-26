@@ -24,15 +24,11 @@ export function useLogin() {
         description: `Bienvenido al sistema, ${user.name || user.email}.`,
       });
 
-      // Redireccion inteligente segun rol y estado de verificacion
       if (user.rol_id === 4) {
-        // Administrador
         navigate('/admin/usuarios');
       } else if (user.rol_id === 2 || user.rol_id === 3) {
-        // Operador Policia o Bomberos
         navigate('/operador/emergencias');
       } else {
-        // Ciudadano
         if (!user.identidad_verificada) {
           navigate('/verificar-identidad');
         } else {

@@ -79,12 +79,10 @@ export const VerifyIdentityPage: React.FC = () => {
       >
         <MountainBackground />
 
-        {/* Cabecera */}
         <div className="relative z-10 w-full flex flex-col items-center pt-2">
           <AppLogo size={64} showText={true} title="AMPAR" subtitle="Validación de Identidad (HU-03)" />
         </div>
 
-        {/* Contenido Central */}
         <div className="relative z-10 w-full my-auto py-4 space-y-5">
           <div className="text-center space-y-2">
             <h2 className="text-base font-bold text-white">Verificación de Cuenta</h2>
@@ -183,7 +181,6 @@ export const VerifyIdentityPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Pie de Pantalla */}
         <div className="relative z-10 w-full flex items-center justify-between pt-2">
           <span className="text-[10px] text-white/40 uppercase">GAMLP · La Paz</span>
           <button

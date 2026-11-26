@@ -1,4 +1,3 @@
-// Tipos de dominio para la Consola Operativa y Reportes de Instituciones (Feature-First)
 
 export type InstitucionTipo = 'POLICIA' | 'BOMBEROS';
 

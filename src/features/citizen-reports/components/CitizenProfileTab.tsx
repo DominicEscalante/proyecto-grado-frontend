@@ -10,7 +10,6 @@ export const CitizenProfileTab: React.FC = () => {
 
   return (
     <div className="w-full space-y-4 pb-20 animate-fadeIn">
-      {/* Tarjeta de Identidad Ciudadana */}
       <div className="p-5 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-[#143601] text-white flex items-center justify-center font-bold text-lg shadow-xs">
@@ -72,7 +71,6 @@ export const CitizenProfileTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Numeros de Emergencia Directos */}
       <div className="p-4 rounded-2xl bg-stone-100 border border-stone-200/80 space-y-2">
         <h3 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
           Líneas de Auxilio Inmediato
@@ -94,7 +92,6 @@ export const CitizenProfileTab: React.FC = () => {
       </div>
 
       <PasskeyAction mode="enroll" />
-      {/* Boton Cerrar Sesion */}
       <button
         type="button"
         onClick={logout}

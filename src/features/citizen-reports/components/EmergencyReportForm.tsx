@@ -131,10 +131,8 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
 }) => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [manualNotes, setManualNotes] = useState<string>(indicacionesRapidas || '');
-  // Opciones de la cuadricula segun institucion
   const gridOptions = institucion === 'POLICIA' ? POLICIA_OPTIONS : BOMBEROS_OPTIONS;
 
-  // Resolver ID real de la base de datos para cada opcion del grid
   const resolveOptionId = (opt: GridOptionDef): number => {
     const match = incidentes.find((inc) => {
       const nombreLower = inc.nombre.toLowerCase();
@@ -143,7 +141,6 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
     return match ? Number(match.tipoEmergenciaId || match.id) : opt.fallbackId;
   };
 
-  // Cada opción visible usa el nombre que el catálogo asigna al ID enviado.
   const catalogById = new Map(incidentes.map((item) => [Number(item.tipoEmergenciaId || item.id), item]));
   const optionsById = new Map<number, GridOptionDef>();
   for (const option of gridOptions) {
@@ -155,7 +152,6 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
   const selectedIncident = catalogById.get(selectedId);
   const incidentName = selectedIncident?.nombre ?? optionsById.get(selectedId)?.title;
 
-  // Alternar tag rapido y sincronizar inmediatamente con el texto de indicaciones
   const handleToggleTag = (tag: string) => {
     if (isSubmitting) return;
     const exists = selectedTags.includes(tag);
@@ -173,7 +169,6 @@ export const EmergencyReportForm: React.FC<EmergencyReportFormProps> = ({
     onChangeIndicaciones(fullText);
   };
 
-  // Manejar edicion manual del textarea
   const handleManualNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     setManualNotes(val);

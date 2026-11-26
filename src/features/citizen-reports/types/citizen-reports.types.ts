@@ -1,4 +1,3 @@
-// Tipos de dominio para el modulo de Reportes Ciudadanos (Feature-First)
 
 export type InstitucionDestino = 'POLICIA' | 'BOMBEROS';
 

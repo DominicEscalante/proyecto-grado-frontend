@@ -1,4 +1,3 @@
-// Hook para la inicializacion y ciclo de vida del mapa interactivo con Leaflet
 
 import React, { useEffect, useRef, useCallback } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -44,11 +43,9 @@ export function useMapIncidentMarkers({
     }),
   });
 
-  // Inicializacion del mapa Leaflet
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    // Crear mapa Leaflet
     const map = L.map(containerRef.current, {
       center: LA_PAZ_CENTRO,
       zoom: 13,
@@ -61,7 +58,6 @@ export function useMapIncidentMarkers({
 
     tileLayerRef.current = tileLayer;
 
-    // Grupos de capas
     const markersLayer = L.layerGroup();
     const heatLayer = L.layerGroup();
     heatLayer.addTo(map);
@@ -71,7 +67,6 @@ export function useMapIncidentMarkers({
     heatLayerRef.current = heatLayer;
     mapRef.current = map;
 
-    // Redimensionar correctamente tras montaje
     setTimeout(() => {
       map.invalidateSize();
     }, 200);
@@ -85,7 +80,6 @@ export function useMapIncidentMarkers({
     };
   }, [containerRef]);
 
-  // Actualizacion reactiva de la capa de teselas segun el estilo seleccionado
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -95,12 +89,10 @@ export function useMapIncidentMarkers({
     const { base: newTileLayer } = createBaseLayers(mapStyle);
     newTileLayer.addTo(mapRef.current);
 
-    // Asegurar que las teselas queden debajo de marcadores y capas de calor
     newTileLayer.bringToBack();
     tileLayerRef.current = newTileLayer;
   }, [mapStyle]);
 
-  // Derive hotspot zones from the current reports instead of static city-wide circles.
   useEffect(() => {
     if (!mapRef.current || !heatLayerRef.current) return;
 
@@ -142,7 +134,6 @@ export function useMapIncidentMarkers({
     }
   }, [incidents, showHeatmap, isBomberos, continuousHeatmap]);
 
-  // Actualizacion de marcadores en el mapa
   useEffect(() => {
     if (!mapRef.current || !markersLayerRef.current) return;
 
@@ -156,7 +147,6 @@ export function useMapIncidentMarkers({
       const markerSize = compactMarkers ? 14 : 36;
       const iconMarkup = renderToStaticMarkup(React.createElement(IncidentIcon, { className: `${compactMarkers ? 'h-2 w-2' : 'h-4 w-4'} text-white` }));
 
-      // Diseno de icono personalizado con Tailwind inline
       const isPending = inc.estado === 'PENDIENTE';
       const primaryColor = isBomberos ? (isPending ? '#d91e36' : '#da344d') : (isPending ? '#dc2626' : '#d97706');
       const glowColor = isBomberos
@@ -201,7 +191,6 @@ export function useMapIncidentMarkers({
     });
   }, [incidents, selectedIncident, onSelectIncident, isBomberos, compactMarkers]);
 
-  // Centrar mapa suavemente al seleccionar un incidente
   useEffect(() => {
     if (!mapRef.current || !selectedIncident) return;
 
@@ -213,7 +202,6 @@ export function useMapIncidentMarkers({
     );
   }, [selectedIncident]);
 
-  // Controles del mapa
   const zoomIn = useCallback(() => {
     mapRef.current?.zoomIn();
   }, []);

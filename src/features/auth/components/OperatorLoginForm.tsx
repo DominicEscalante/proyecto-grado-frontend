@@ -30,7 +30,6 @@ export const OperatorLoginForm: React.FC = () => {
         </div>
       )}
 
-      {/* Input Credencial Institucional */}
       <div className="space-y-1.5">
         <label className="text-[11px] font-semibold uppercase tracking-wider text-white/80 flex items-center gap-1.5">
           <Shield className="w-3.5 h-3.5 text-white/70" />
@@ -50,7 +49,6 @@ export const OperatorLoginForm: React.FC = () => {
         )}
       </div>
 
-      {/* Input Clave */}
       <div className="space-y-1.5">
         <label className="text-[11px] font-semibold uppercase tracking-wider text-white/80 flex items-center gap-1.5">
           <Lock className="w-3.5 h-3.5 text-white/70" />
@@ -82,7 +80,6 @@ export const OperatorLoginForm: React.FC = () => {
         )}
       </div>
 
-      {/* Boton Pildora Blanco */}
       <div className="pt-2">
         <button
           type="submit"

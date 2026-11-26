@@ -1,4 +1,3 @@
-// Utilidades y formateadores para la consola de emergencias de instituciones
 
 import { EstadoIncidente, InstitucionTipo } from '../types/institution-reports.types.js';
 

@@ -1,12 +1,8 @@
-// Utilidades puras para el modulo de Reportes Ciudadanos
 
 import { TipoEmergenciaItem, InstitucionDestino } from '../types/citizen-reports.types.js';
 
 export const MAX_EVIDENCE_FILES = 5;
 
-/**
- * Normaliza cualquier objeto de emergencia devuelto por el backend o definido localmente.
- */
 export function normalizarTipoEmergencia(raw: any): TipoEmergenciaItem {
   const idNumerico = Number(raw.tipoEmergenciaId ?? raw.id ?? 1);
   return {
@@ -19,11 +15,7 @@ export function normalizarTipoEmergencia(raw: any): TipoEmergenciaItem {
   };
 }
 
-/**
- * Catalogo predeterminado de tipos de incidentes como respaldo offline inmediato.
- */
 export const CATALOGO_EMERGENCIAS_DEFAULT: TipoEmergenciaItem[] = [
-  // Bomberos
   {
     tipoEmergenciaId: 4,
     id: 4,
@@ -72,7 +64,6 @@ export const CATALOGO_EMERGENCIAS_DEFAULT: TipoEmergenciaItem[] = [
     institucion: 'BOMBEROS',
     activo: true,
   },
-  // Policia
   {
     tipoEmergenciaId: 1,
     id: 1,
@@ -110,9 +101,6 @@ export const COORDENADAS_DEFAULT_LA_PAZ = {
   precisionMetros: 15,
 };
 
-/**
- * Filtra los tipos de incidentes por institucion destino.
- */
 export function filtrarIncidentesPorInstitucion(
   tipos: TipoEmergenciaItem[],
   institucion: InstitucionDestino
@@ -122,9 +110,6 @@ export function filtrarIncidentesPorInstitucion(
   );
 }
 
-/**
- * Formatea el tamano de un archivo en bytes a formato legible (KB / MB).
- */
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -133,9 +118,6 @@ export function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-/**
- * Formatea una fecha ISO a fecha y hora amigable.
- */
 export function formatFechaReporte(fechaIso: string | Date | undefined | null): string {
   if (!fechaIso) return 'Reciente';
   try {

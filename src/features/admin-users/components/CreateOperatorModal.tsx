@@ -1,3 +1,4 @@
+import { nuevaPasswordSchema, passwordHint } from '../../auth/utils/password.schema.js';
 import React, { useState } from 'react';
 import {
   XMarkIcon,
@@ -34,7 +35,7 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
   const [telefono, setTelefono] = useState('');
   const [email, setEmail] = useState('');
   const [rango, setRango] = useState('');
-  const [password, setPassword] = useState('Pa$$w0rd');
+  const [password, setPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -63,8 +64,8 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
       return;
     }
 
-    if (password.length < 8) {
-      setFormError('La contraseña debe tener al menos 8 caracteres.');
+    if (!nuevaPasswordSchema.safeParse(password).success) {
+      setFormError(passwordHint);
       return;
     }
 
@@ -92,7 +93,6 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
         className="w-full max-w-lg rounded-xl bg-white border border-stone-200 shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Cabecera */}
         <div className="p-4 sm:p-5 border-b border-stone-200 flex items-center justify-between bg-[#F8FAFC]">
           <div>
             <h3 className="text-sm font-bold text-[#143601]">Registrar Nuevo Operador</h3>
@@ -107,7 +107,6 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
           </button>
         </div>
 
-        {/* Formulario */}
         <form
           onSubmit={handleSubmit}
           className="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto no-scrollbar text-xs"
@@ -119,7 +118,6 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
             </div>
           )}
 
-          {/* Selector de Institución Operativa con Shadcn/UI Select */}
           <div>
             <label className="block text-stone-700 font-semibold mb-1 font-mono text-[11px] uppercase">
               Institución Operativa
@@ -138,13 +136,12 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
             </Select>
           </div>
 
-          {/* Nombres y Apellidos */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Nombres</label>
               <input
                 type="text"
-                value={nombres}
+                maxLength={100} value={nombres}
                 onChange={(e) => setNombres(e.target.value)}
                 placeholder="Ej. Pedro"
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] placeholder-stone-400 focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
@@ -154,7 +151,7 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Apellidos</label>
               <input
                 type="text"
-                value={apellidos}
+                maxLength={100} value={apellidos}
                 onChange={(e) => setApellidos(e.target.value)}
                 placeholder="Ej. Mamani"
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] placeholder-stone-400 focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
@@ -162,13 +159,12 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
             </div>
           </div>
 
-          {/* Documento CI y Complemento */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Carnet de Identidad (CI)</label>
               <input
                 type="text"
-                value={ci}
+                inputMode="numeric" pattern="[0-9]{5,15}" maxLength={15} value={ci}
                 onChange={(e) => setCi(e.target.value)}
                 placeholder="Ej. 7654321"
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] placeholder-stone-400 font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
@@ -178,7 +174,7 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Compl.</label>
               <input
                 type="text"
-                value={complemento}
+                pattern="[A-Za-z0-9]{0,5}" maxLength={5} value={complemento}
                 onChange={(e) => setComplemento(e.target.value)}
                 placeholder="1A"
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] placeholder-stone-400 font-mono text-center focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
@@ -186,13 +182,12 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
             </div>
           </div>
 
-          {/* Celular y Rango */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Celular (8 dígitos)</label>
               <input
                 type="text"
-                value={telefono}
+                maxLength={8} value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
                 placeholder="71234567"
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] placeholder-stone-400 font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
@@ -202,7 +197,7 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Rango Oficial</label>
               <input
                 type="text"
-                value={rango}
+                maxLength={50} value={rango}
                 onChange={(e) => setRango(e.target.value)}
                 placeholder="Ej. Sargento / Teniente"
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] placeholder-stone-400 focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
@@ -210,33 +205,30 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
             </div>
           </div>
 
-          {/* Correo Institucional */}
           <div>
             <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Correo Institucional</label>
             <input
               type="email"
-              value={email}
+              maxLength={254} value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={institucion === 'POLICIA' ? 'operador@pol.com' : 'operador@bom.com'}
               className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] placeholder-stone-400 font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
             />
           </div>
 
-          {/* Contraseña Inicial */}
           <div>
             <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Contraseña de Acceso</label>
             <input
               type="text"
-              value={password}
+              maxLength={128} value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
             />
             <span className="text-[10px] text-stone-500 pt-1 block font-mono">
-              Por defecto: Pa$$w0rd (el operador puede actualizarla tras su primer ingreso).
+              {passwordHint}
             </span>
           </div>
 
-          {/* Botones */}
           <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
             <button
               type="button"

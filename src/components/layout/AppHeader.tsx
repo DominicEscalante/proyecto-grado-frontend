@@ -199,9 +199,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   return (
     <header className={`sticky top-0 z-40 w-full bg-[#143601] backdrop-blur-md border-b border-white/15 transition-colors ${className}`}>
       <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between ${effectiveRoleId === 4 ? "md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]" : ""}`}>
-        {/* 1. Zona Izquierda: Marca + Contexto */}
         <div className="flex items-center min-w-0">
-          {/* Marca / Logo */}
           <Link
             to={effectiveRoleId === 4 ? '/admin/usuarios' : effectiveRoleId === 1 ? '/ciudadano/reportes' : '/operador/emergencias'}
             className="flex items-center gap-2.5 group select-none shrink-0"
@@ -213,10 +211,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </span>
           </Link>
 
-          {/* Divisor vertical sutil */}
           <div className="h-5 w-px bg-stone-200 mx-3 hidden sm:block shrink-0" />
 
-          {/* Badge de Rol / Entorno */}
           <div className="hidden sm:block shrink-0">
             <span className="rounded-md px-2.5 py-1 text-xs font-semibold bg-white/10 text-white border border-white/20 font-sans tracking-tight">
               {roleLabel}
@@ -225,7 +221,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         </div>
 
-        {/* Navegacion Multi-Rol (Desktop) */}
         {visibleNavItems.length > 0 && (
           <nav
             aria-label="Navegación principal"
@@ -258,15 +253,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </nav>
         )}
 
-        {/* 2. Zona Derecha: Utilidades + Dropdown de Perfil de Usuario */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 justify-self-end">
-          {/* Indicador discreto de estado operativo */}
           <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-white/90 bg-white/10 px-2.5 py-1 rounded-full border border-white/15 select-none">
             <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
             <span>En línea</span>
           </div>
 
-          {/* Trigger y Menu Desplegable de Usuario (Dropdown) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -274,17 +266,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 className="flex items-center gap-2.5 pl-2 pr-2.5 py-1.5 rounded-xl border border-transparent hover:border-white/20 hover:bg-white/10 transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-white/20"
                 aria-label="Menú de perfil de usuario"
               >
-                {/* Avatar circular en verde institucional (#143601) con iniciales */}
                 <div className="w-8 h-8 rounded-full bg-white/15 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white/25 shrink-0">
                   {initials}
                 </div>
 
-                {/* Nombre en una linea */}
                 <span className="text-sm font-semibold text-white hidden sm:block truncate max-w-[150px]">
                   {userName}
                 </span>
 
-                {/* Icono Chevron */}
                 <ChevronDownIcon className="w-4 h-4 text-white/75 shrink-0 stroke-[2]" />
               </button>
             </DropdownMenuTrigger>
@@ -294,7 +283,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               sideOffset={8}
               className="w-64 rounded-xl bg-white shadow-lg border border-stone-200/90 py-1.5 z-50 p-0 overflow-hidden animate-fadeIn"
             >
-              {/* Cabecera del Dropdown (No clicable) */}
               <div className="border-b border-stone-100 px-4 py-3 select-none">
                 <p className="text-sm font-bold text-stone-900 leading-snug truncate">
                   {userName}
@@ -321,7 +309,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 </div>
               )}
 
-              {/* Pie del Dropdown */}
               <DropdownMenuSeparator className="my-0 bg-stone-100" />
               <div className="pt-1 mt-1 px-1.5 pb-1">
                 <button
@@ -336,7 +323,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Boton Hamburguesa para navegacion movil (md:hidden) */}
           {visibleNavItems.length > 0 && (
             <button
               type="button"
@@ -355,7 +341,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
       </div>
 
-      {/* Menu Colapsable Movil (Mobile-First) */}
       {mobileMenuOpen && visibleNavItems.length > 0 && (
         <div className="md:hidden border-t border-stone-200/80 bg-white/95 backdrop-blur-md px-4 py-3 space-y-2 animate-fadeIn shadow-md">
           <nav aria-label="Navegación móvil" className="space-y-1">

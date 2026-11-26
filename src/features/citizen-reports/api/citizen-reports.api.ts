@@ -1,4 +1,3 @@
-// Peticiones HTTP del modulo de Reportes Ciudadanos
 
 import { apiClient, handleApiError } from '../../../api/client.js';
 import {
@@ -25,9 +24,6 @@ export async function buscarCoincidenciaApi(params: Pick<CrearReportePayload, 'i
   return response.data.data;
 }
 
-/**
- * Consulta el catalogo de emergencias filtrado opcionalmente por institucion.
- */
 export async function getCatalogoEmergenciasApi(
   institucion?: InstitucionDestino
 ): Promise<TipoEmergenciaItem[]> {
@@ -42,7 +38,6 @@ export async function getCatalogoEmergenciasApi(
     }
     return CATALOGO_EMERGENCIAS_DEFAULT.map(normalizarTipoEmergencia);
   } catch (error) {
-    // Si la llamada falla o no hay conexion, retornamos catalogo de contingencia
     console.warn('Utilizando catalogo local de emergencias por indisponibilidad de red:', error);
     return CATALOGO_EMERGENCIAS_DEFAULT.map(normalizarTipoEmergencia);
   }
@@ -65,9 +60,6 @@ export async function crearReporteApi(
   }
 }
 
-/**
- * Carga evidencias fotograficas o videos adjuntos al reporte creado.
- */
 export async function adjuntarEvidenciasApi(
   codigoTicket: string,
   archivos: File[]
@@ -95,9 +87,6 @@ export async function adjuntarEvidenciasApi(
   }
 }
 
-/**
- * Obtiene el listado de reportes del ciudadano autenticado ("Mis Reportes").
- */
 export async function getMisReportesApi(
   pagina = 1,
   limite = 20

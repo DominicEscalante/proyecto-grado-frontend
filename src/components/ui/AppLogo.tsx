@@ -10,9 +10,6 @@ export interface AppLogoProps {
   color?: string;
 }
 
-/**
- * Isotipo Enlace de AMPAR: coordinacion entre equipos de respuesta.
- */
 export const AppLogo: React.FC<AppLogoProps> = ({
   className = '',
   size = 72,

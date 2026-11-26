@@ -115,7 +115,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Nombres</label>
               <input
                 type="text"
-                value={nombres}
+                maxLength={100} value={nombres}
                 onChange={(e) => setNombres(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
               />
@@ -124,7 +124,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Apellidos</label>
               <input
                 type="text"
-                value={apellidos}
+                maxLength={100} value={apellidos}
                 onChange={(e) => setApellidos(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
               />
@@ -135,7 +135,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Número Celular</label>
             <input
               type="text"
-              value={telefono}
+              maxLength={8} value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
               className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
             />
@@ -163,7 +163,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Rango Oficial</label>
                 <input
                   type="text"
-                  value={rango}
+                  maxLength={50} value={rango}
                   onChange={(e) => setRango(e.target.value)}
                   placeholder="Ej. Sargento, Teniente"
                   className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"

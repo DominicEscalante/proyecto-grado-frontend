@@ -112,7 +112,6 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
 
   return (
     <div className="rounded-xl bg-white border border-stone-200 overflow-hidden shadow-xs flex flex-col h-full min-h-0">
-      {/* 1. Header Superior Unificado: Toolbar integrada directamente dentro de la tarjeta */}
       <div className="shrink-0">
         <Toolbar
           metrics={metrics}
@@ -127,7 +126,6 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
         />
       </div>
 
-      {/* 2. Vista Desktop: Tabla de Alta Densidad con Altura Fija y Cabecera Sticky con border-y */}
       <div className="hidden md:flex flex-1 min-h-0 flex-col overflow-hidden">
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse text-xs">
@@ -173,7 +171,6 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
                           : 'border-l-transparent hover:bg-stone-50/80'
                       }`}
                     >
-                      {/* CI / ID */}
                       <td className="py-2 px-3.5 font-mono text-stone-700 text-xs font-semibold whitespace-nowrap">
                         {u.ci}
                         {u.complemento && (
@@ -181,10 +178,8 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
                         )}
                       </td>
 
-                      {/* USUARIO / NOMBRE con min-w-[220px] */}
                       <td className="py-2 px-3.5 min-w-[220px]">
                         <div className="flex items-center gap-2">
-                          {/* Avatar circular */}
                           <div
                             className={`w-6.5 h-6.5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border ${
                               isSelected
@@ -205,7 +200,6 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
                         </div>
                       </td>
 
-                      {/* CONTACTO con Icono Sutil PhoneIcon */}
                       <td className="py-2 px-3.5 whitespace-nowrap">
                         <div className="inline-flex items-center text-stone-600 font-mono text-xs">
                           <PhoneIcon className="w-3.5 h-3.5 text-stone-400 mr-1.5 shrink-0" />
@@ -213,17 +207,14 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
                         </div>
                       </td>
 
-                      {/* ROL / INSTITUCIÓN */}
                       <td className="py-2 px-3.5 whitespace-nowrap">
                         {renderRoleBadge(u)}
                       </td>
 
-                      {/* ESTADO */}
                       <td className="py-2 px-3.5 whitespace-nowrap">
                         {renderStatus(u.estadoCuenta)}
                       </td>
 
-                      {/* SELECCIÓN / ACCIÓN RÁPIDA */}
                       <td className="py-2 px-2 text-center">
                         <ChevronRightIcon
                           className={`w-3.5 h-3.5 mx-auto transition-transform ${
@@ -242,7 +233,6 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
         </div>
       </div>
 
-      {/* 3. Vista Móvil: Tarjetas Táctiles Interactivas */}
       <div className="block md:hidden flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2.5 space-y-2">
         {loading && users.length === 0 ? (
           <div className="py-12 text-center text-stone-400">
@@ -301,7 +291,6 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
         )}
       </div>
 
-      {/* 4. Pie de la Lista (Contador Fijo) */}
       <div className="shrink-0 px-3.5 py-1.5 sm:py-2 border-t border-stone-200 bg-[#F8FAFC] flex items-center justify-between text-[11px] sm:text-xs text-stone-500">
         <span>
           Mostrando <strong className="text-[#143601] font-mono">{users.length}</strong> de{' '}

@@ -45,14 +45,12 @@ export const CitizenDashboardPage: React.FC = () => {
 
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden bg-slate-50 text-slate-900">
-      {/* 1. Header Compacto con Estado GPS Integrado */}
       <CitizenHeader
         gps={gps}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
 
-      {/* 2. Contenedor Principal Ergonomico Mobile-First */}
       <main className={`mx-auto min-h-0 w-full flex-1 px-3 md:px-6 ${
         activeTab === 'reportar'
           ? 'flex max-w-7xl flex-col gap-2 overflow-y-auto py-2 md:gap-4 md:py-[clamp(0.5rem,2dvh,1.25rem)] xl:px-8'
@@ -92,16 +90,13 @@ export const CitizenDashboardPage: React.FC = () => {
           </>
         )}
 
-        {/* Pestana 2: Alertas / Mis Reportes */}
         {activeTab === 'alertas' && (
           <CitizenAlertsList onNuevoReporte={() => setActiveTab('reportar')} />
         )}
 
-        {/* Pestana 3: Perfil del Ciudadano */}
         {activeTab === 'perfil' && <CitizenProfileTab />}
       </main>
 
-      {/* 3. Modal de Confirmacion de Alerta SOS */}
       <ReportSuccessModal
         reporte={successReport}
         onClose={handleCerrarExito}
@@ -118,7 +113,6 @@ export const CitizenDashboardPage: React.FC = () => {
         </div>
       </div>}
 
-      {/* 4. Barra de Navegacion Inferior Fija para Movil */}
       <CitizenBottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}

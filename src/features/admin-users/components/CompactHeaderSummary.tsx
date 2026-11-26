@@ -12,7 +12,6 @@ export const CompactHeaderSummary: React.FC<CompactHeaderSummaryProps> = ({
 }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-0.5">
-      {/* Título y Subtítulo en Verde Más Oscuro de la Paleta (#143601) */}
       <div>
         <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#143601] leading-tight">
           Directorio Institucional y Control de Cuentas
@@ -22,7 +21,6 @@ export const CompactHeaderSummary: React.FC<CompactHeaderSummaryProps> = ({
         </p>
       </div>
 
-      {/* Botones de Acción Global en la Esquina Superior Derecha */}
       <div className="flex items-center gap-2 shrink-0">
         <button
           type="button"

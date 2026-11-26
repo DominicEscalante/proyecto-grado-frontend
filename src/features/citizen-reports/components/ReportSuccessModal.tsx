@@ -32,7 +32,6 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
       <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm space-y-4 overflow-y-auto rounded-lg border border-slate-200 bg-white p-5 shadow-xl sm:p-6">
-        {/* Icono de Exito */}
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-800">
           <CheckCircle2 className="h-6 w-6" />
         </div>
@@ -46,7 +45,6 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
           </p>
         </div>
 
-        {/* Tarjeta de Ticket Correlativo */}
         <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-slate-200 space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
             <span>Ticket de Seguimiento</span>
@@ -81,7 +79,6 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
           )}
         </div>
 
-        {/* Llamada Directa de Respaldo */}
         <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-left flex items-center justify-between">
           <div className="space-y-0.5">
             <p className="text-sm font-bold text-amber-900">
@@ -100,7 +97,6 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
           </a>
         </div>
 
-        {/* Acciones */}
         <div className="space-y-2 pt-1">
           {onVerMisAlertas && (
             <button

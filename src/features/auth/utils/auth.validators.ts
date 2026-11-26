@@ -1,3 +1,4 @@
+import { nuevaPasswordSchema } from './password.schema.js';
 import { z } from 'zod';
 
 export const loginSchema = z.object({
@@ -15,20 +16,20 @@ export const registerCitizenSchema = z
     nombres: z
       .string()
       .trim()
-      .min(2, 'Los nombres deben tener al menos 2 caracteres.'),
+      .min(2, 'Los nombres deben tener al menos 2 caracteres.').max(100).regex(/^[\p{L}\p{M}]+(?:[ .'’-]+[\p{L}\p{M}]+)*$/u, 'Usa letras en nombres y apellidos.'),
     apellidos: z
       .string()
       .trim()
-      .min(2, 'Los apellidos deben tener al menos 2 caracteres.'),
+      .min(2, 'Los apellidos deben tener al menos 2 caracteres.').max(100).regex(/^[\p{L}\p{M}]+(?:[ .'’-]+[\p{L}\p{M}]+)*$/u, 'Usa letras en nombres y apellidos.'),
     ci: z
       .string()
       .trim()
       .min(5, 'El CI debe tener al menos 5 digitos.')
-      .max(15, 'El CI no puede exceder los 15 caracteres.'),
+      .max(15, 'El CI no puede exceder los 15 caracteres.').regex(/^\d+$/, 'El CI debe contener solo dígitos.'),
     complemento: z
       .string()
       .trim()
-      .max(5, 'Maximo 5 caracteres.')
+      .regex(/^[A-Za-z0-9]*$/, 'Complemento inválido.').max(5, 'Maximo 5 caracteres.')
       .optional()
       .or(z.literal('')),
     telefono: z
@@ -41,11 +42,8 @@ export const registerCitizenSchema = z
     email: z
       .string()
       .trim()
-      .email('Formato de correo electronico invalido.'),
-    password: z
-      .string()
-      .min(8, 'La contrasena debe tener al menos 8 caracteres.')
-      .max(128, 'Maximo 128 caracteres.'),
+      .email('Formato de correo electronico invalido.').max(254),
+    password: nuevaPasswordSchema,
     confirmPassword: z
       .string()
       .min(1, 'Confirme su contrasena.'),
