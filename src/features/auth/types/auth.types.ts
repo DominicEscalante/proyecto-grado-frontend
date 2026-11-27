@@ -10,6 +10,7 @@ export interface User {
   institucion?: 'POLICIA' | 'BOMBEROS' | null;
   rango?: string | null;
   rol_id: number;
+  cambio_password_pendiente?: boolean;
   identidad_verificada: boolean;
   estado_cuenta: boolean;
   createdAt?: string;

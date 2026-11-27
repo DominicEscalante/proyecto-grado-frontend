@@ -51,10 +51,10 @@ export const CitizenDashboardPage: React.FC = () => {
         onTabChange={setActiveTab}
       />
 
-      <main className={`mx-auto min-h-0 w-full flex-1 px-3 md:px-6 ${
+      <main className={`min-h-0 w-full flex-1 px-3 md:px-6 xl:px-8 ${
         activeTab === 'reportar'
-          ? 'flex max-w-7xl flex-col gap-2 overflow-y-auto py-2 md:gap-4 md:py-[clamp(0.5rem,2dvh,1.25rem)] xl:px-8'
-          : 'max-w-6xl overflow-y-auto py-4'
+          ? 'flex flex-col gap-2 overflow-y-auto py-2 md:gap-4 md:py-[clamp(0.5rem,2dvh,1.25rem)]'
+          : 'overflow-y-auto py-4'
       }`}>
         {evidenceUpload === 'uploading' && <p role="status" className="shrink-0 rounded-md bg-sky-50 p-2 text-xs text-sky-900">Reporte recibido. Adjuntando evidencia en segundo plano.</p>}
         {evidenceUpload === 'failed' && <div role="alert" className="flex shrink-0 items-center justify-between gap-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-900"><span>El reporte se recibió; falta adjuntar la evidencia.</span><button type="button" onClick={retryEvidenceUpload} className="font-bold underline">Reintentar</button></div>}

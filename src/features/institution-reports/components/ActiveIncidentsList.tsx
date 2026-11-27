@@ -1,5 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import React, { useMemo, useRef, useState } from 'react';
+import { CalendarDaysIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import type { DateRange } from 'react-day-picker';
+import { es } from 'react-day-picker/locale';
+import { Calendar } from '../../../components/ui/calendar.js';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/popover.js';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select.js';
 import { IncidenteInstitucional } from '../types/institution-reports.types.js';
 import { filterDispatchIncidents } from '../utils/dispatch-filters.js';
 import { IncidentCard } from './IncidentCard.js';
@@ -13,17 +18,21 @@ interface Props {
   isBomberos: boolean;
 }
 
+const dateKey = new Intl.DateTimeFormat('sv-SE');
+const dateLabel = new Intl.DateTimeFormat('es-BO', { dateStyle: 'short' });
+
 export const ActiveIncidentsList: React.FC<Props> = ({ incidents, selectedIncidentId, selectedReportId, onSelectIncident, onSelectReport, busqueda, onBusquedaChange, isLoading, isBomberos }) => {
-  const [desde, setDesde] = useState('');
-  const [hasta, setHasta] = useState('');
+  const [range, setRange] = useState<DateRange>();
+  const dateTriggerRef = useRef<HTMLButtonElement>(null);
+  const desde = range?.from ? dateKey.format(range.from) : '';
+  const hasta = range?.to ? dateKey.format(range.to) : '';
   const [tipo, setTipo] = useState('');
   const tipos = useMemo(() => [...new Set(incidents.map((incident) => incident.tipoEmergencia))]
     .sort((a, b) => a.localeCompare(b, 'es')), [incidents]);
-  const invalidRange = Boolean(desde && hasta && desde > hasta);
   const [filter, setFilter] = useState<'PENDIENTES' | 'EN_CURSO' | 'FALSA_ALARMA'>('PENDIENTES');
   const visible = useMemo(
-    () => invalidRange ? [] : filterDispatchIncidents(incidents, filter, tipo, desde, hasta),
-    [incidents, filter, tipo, desde, hasta, invalidRange],
+    () => filterDispatchIncidents(incidents, filter, tipo, desde, hasta),
+    [incidents, filter, tipo, desde, hasta],
   );
   const sectionTitle = filter === 'FALSA_ALARMA' ? 'Falsas Alarmas' : 'Incidentes Activos';
 
@@ -35,14 +44,48 @@ export const ActiveIncidentsList: React.FC<Props> = ({ incidents, selectedIncide
           <MagnifyingGlassIcon className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${isBomberos ? 'text-[#da344d]/70' : 'text-stone-400'}`} />
           <input value={busqueda} onChange={(event) => onBusquedaChange(event.target.value)} placeholder="Buscar incidente, dirección o ticket" className={`w-full rounded-lg border py-2 pl-9 pr-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 ${isBomberos ? 'border-[#ec5766]/20 bg-[#FDF8F7] focus:border-[#da344d] focus:ring-[#da344d]/10' : 'border-emerald-900/10 bg-[#F8FAF8] focus:border-emerald-700 focus:ring-emerald-700/10'} focus:ring-2`} />
         </label>
-        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-          <label>Desde<input type="date" value={desde} max={hasta || undefined} onChange={(event) => setDesde(event.target.value)} className="block w-full rounded border border-stone-300 bg-white p-1" /></label>
-          <label>Hasta<input type="date" value={hasta} min={desde || undefined} onChange={(event) => setHasta(event.target.value)} className="block w-full rounded border border-stone-300 bg-white p-1" /></label>
-          <label className="col-span-2">Tipo de emergencia<select value={tipo} onChange={(event) => setTipo(event.target.value)} className="block w-full rounded border border-stone-300 bg-white p-1">
-            <option value="">Todos los tipos</option>
-            {tipos.map((item) => <option key={item}>{item}</option>)}
-          </select></label>
-          {invalidRange && <p role="alert" className="col-span-2 text-rose-800">La fecha inicial debe ser anterior o igual a la final.</p>}
+        <div className="mt-3 grid gap-2 text-xs">
+          <div className="grid gap-1">
+            <span id="dispatch-date-label">Rango de fechas</span>
+            <div className="relative">
+              <Popover>
+                <PopoverTrigger ref={dateTriggerRef} aria-labelledby="dispatch-date-label dispatch-date-value" className="flex h-8.5 w-full items-center gap-2 rounded-lg border border-stone-200 bg-white pl-3 pr-9 text-left font-medium text-stone-800 focus-visible:outline-2 focus-visible:outline-current">
+                  <CalendarDaysIcon className="h-4 w-4 text-stone-500" />
+                  <span id="dispatch-date-value">
+                    {range?.from ? `${dateLabel.format(range.from)} – ${range.to ? dateLabel.format(range.to) : 'Sin fecha final'}` : 'Todas las fechas'}
+                  </span>
+                </PopoverTrigger>
+                <PopoverContent aria-label="Seleccionar rango de fechas">
+                  <Calendar mode="range" locale={es} selected={range} onSelect={setRange} defaultMonth={range?.from} autoFocus accentColor={isBomberos ? '#c42348' : '#245501'} />
+                  {range && <button type="button" onClick={() => setRange(undefined)} className="mt-2 rounded border border-stone-200 px-2 py-1 text-xs font-medium hover:bg-stone-100">Limpiar fechas</button>}
+                </PopoverContent>
+              </Popover>
+              {range?.from && (
+                <button
+                  type="button"
+                  aria-label="Limpiar rango de fechas"
+                  title="Limpiar rango de fechas"
+                  onClick={() => {
+                    setRange(undefined);
+                    dateTriggerRef.current?.focus();
+                  }}
+                  className="absolute right-1 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-stone-500 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-current"
+                >
+                  <XMarkIcon aria-hidden="true" className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="grid gap-1">
+            <label htmlFor="dispatch-emergency-type">Tipo de emergencia</label>
+            <Select value={tipo || '__all__'} onValueChange={(value) => setTipo(value === '__all__' ? '' : value)}>
+              <SelectTrigger id="dispatch-emergency-type" className="bg-white"><SelectValue placeholder="Todos los tipos" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todos los tipos</SelectItem>
+                {tipos.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div role="group" aria-label="Filtrar por estado" className={`mt-3 grid grid-cols-3 rounded-lg p-1 ${isBomberos ? 'bg-[#ec5766]/10' : 'bg-emerald-900/5'}`}>
           {([['PENDIENTES', 'Pendientes'], ['EN_CURSO', 'En revisión'], ['FALSA_ALARMA', 'Falsas']] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={`whitespace-nowrap rounded-md px-1 py-1.5 text-[10px] font-semibold transition-colors ${filter === value ? `${isBomberos ? 'bg-[#c42348]' : 'bg-[#143601]'} text-white shadow-sm` : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}`}>{label}</button>)}

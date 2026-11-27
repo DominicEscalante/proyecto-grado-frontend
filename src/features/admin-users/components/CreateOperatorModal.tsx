@@ -217,7 +217,7 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Contraseña de Acceso</label>
+            <label className="block text-stone-700 font-medium mb-1 font-mono text-[11px]">Contraseña temporal</label>
             <input
               type="text"
               maxLength={128} value={password}
@@ -225,7 +225,7 @@ export const CreateOperatorModal: React.FC<CreateOperatorModalProps> = ({
               className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-stone-300 text-[#143601] font-mono focus:outline-none focus:border-[#245501] focus:ring-1 focus:ring-[#245501] transition-colors"
             />
             <span className="text-[10px] text-stone-500 pt-1 block font-mono">
-              {passwordHint}
+              {passwordHint} El operador deberá cambiarla al iniciar sesión.
             </span>
           </div>
 

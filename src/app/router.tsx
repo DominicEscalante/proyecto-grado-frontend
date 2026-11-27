@@ -9,6 +9,8 @@ import { AdminAuditPage } from '../pages/AdminAuditPage.js';
 import { VerifyIdentityPage } from '../pages/VerifyIdentityPage.js';
 import { ProtectedRoute } from '../components/ProtectedRoute.js';
 
+import { OperatorInitialPasswordPage } from '../pages/OperatorInitialPasswordPage.js';
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -37,6 +39,10 @@ export const router = createBrowserRouter([
         <CitizenDashboardPage />
       </ProtectedRoute>
     ),
+  },
+  {
+    path: '/operador/password-inicial',
+    element: <ProtectedRoute allowedRoles={[2, 3]} passwordSetup><OperatorInitialPasswordPage /></ProtectedRoute>,
   },
   {
     path: '/operador/emergencias',

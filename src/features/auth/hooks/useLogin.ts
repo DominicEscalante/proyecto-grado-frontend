@@ -18,6 +18,11 @@ export function useLogin() {
     try {
       const user = await login(values, rememberSession);
 
+      if (user.cambio_password_pendiente) {
+        navigate('/operador/password-inicial', { replace: true });
+        return;
+      }
+
       sileo.success({
         duration: 1000,
         title: 'Inicio de sesión exitoso',

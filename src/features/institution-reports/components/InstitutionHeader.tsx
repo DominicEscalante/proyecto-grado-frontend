@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  BellIcon,
   ChartBarIcon,
   ChevronDownIcon,
   ClockIcon,
@@ -44,7 +43,6 @@ export const InstitutionHeader: React.FC = () => {
           ))}
         </nav>
         <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-xs text-white/90"><span className="h-2 w-2 rounded-full bg-emerald-300" />En línea</span>
-        <button type="button" aria-label="Alertas" className="relative rounded-lg p-2 text-white/85 hover:bg-white/10 hover:text-white"><BellIcon className="h-5 w-5" /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-400" /></button>
         <details className="relative">
           <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg p-1.5 hover:bg-white/10">
             <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/15 text-xs font-bold text-white">{name.split(/\s+/).slice(-2).map((part) => part[0]).join('').toUpperCase()}</span>

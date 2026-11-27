@@ -17,7 +17,7 @@ export const CitizenHeader = ({ gps, activeTab, onTabChange }: CitizenHeaderProp
 
   return (
     <header className="z-30 shrink-0 border-b border-white/10 bg-[#0F291E] text-white">
-      <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-3 px-3 md:grid md:h-14 md:px-6 md:grid-cols-[1fr_auto_1fr]">
+      <div className="flex h-12 w-full items-center justify-between gap-3 px-3 md:grid md:h-14 md:grid-cols-[1fr_auto_1fr] md:px-6 xl:px-8">
         <button type="button" onClick={() => onTabChange('reportar')} className="flex w-fit items-center gap-2 rounded-md text-left">
           <AppLogo size={26} color="#ffffff" showText={false} />
           <span>

@@ -160,7 +160,7 @@ export const CitizenAlertsList: React.FC<CitizenAlertsListProps> = ({ onNuevoRep
                 <DialogOverlay className="bg-slate-950/50" />
                 <DialogPanel
                   aria-describedby={undefined}
-                  className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-xl motion-safe:animate-drawerBottomIn"
+                  className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-hidden border-l border-slate-200 bg-white shadow-xl outline-none motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:slide-in-from-right motion-safe:data-[state=closed]:animate-out motion-safe:data-[state=closed]:slide-out-to-right motion-safe:duration-200 sm:max-w-lg"
                 >
                   <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-4 py-3 sm:px-6">
                     <div className="min-w-0 space-y-1">

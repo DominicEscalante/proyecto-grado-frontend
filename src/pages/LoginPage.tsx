@@ -20,7 +20,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode }) => {
   useEffect(() => {
     if (!user) return;
     if (user.rol_id === 4) navigate('/admin/usuarios', { replace: true });
-    else if (user.rol_id === 2 || user.rol_id === 3) navigate('/operador/emergencias', { replace: true });
+    else if (user.rol_id === 2 || user.rol_id === 3) navigate(user.cambio_password_pendiente ? '/operador/password-inicial' : '/operador/emergencias', { replace: true });
     else navigate(user.identidad_verificada ? '/ciudadano/reportes' : '/verificar-identidad', { replace: true });
   }, [user, navigate]);
 
