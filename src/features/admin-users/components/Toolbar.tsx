@@ -50,8 +50,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   ];
 
   return (
-    <div className="p-2 sm:p-2.5 border-b border-stone-200 bg-white flex flex-col xl:flex-row xl:items-center justify-between gap-2 sm:gap-2.5">
-      <div className="bg-stone-100 p-0.5 rounded-lg inline-flex items-center gap-1 overflow-x-auto no-scrollbar max-w-full">
+    <div className="p-2 sm:p-2.5 border-b border-stone-200 bg-white flex flex-wrap items-center justify-between gap-2 sm:gap-2.5">
+      <div className="bg-stone-100 p-0.5 rounded-lg inline-flex items-center gap-1 overflow-x-auto min-w-0 max-w-full">
         {roleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeFilter === tab.id;
@@ -87,11 +87,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         })}
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full xl:w-auto">
-        <div className="relative flex-1 sm:w-56 min-w-[170px]">
+      <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1 basis-full sm:basis-[25rem]">
+        <div className="relative min-w-0 basis-full sm:basis-40 flex-1">
           <MagnifyingGlassIcon className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
           <input
             type="text"
+            aria-label="Buscar por CI, nombre o correo"
             placeholder="Buscar CI, nombre, correo..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}

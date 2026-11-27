@@ -37,6 +37,7 @@ export interface AppHeaderProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   className?: string;
+  fullWidth?: boolean;
 }
 
 // Estructura extensible de rutas de navegacion multi-rol
@@ -138,6 +139,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   activeTab,
   onTabChange,
   className = '',
+  fullWidth = false,
 }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -198,7 +200,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className={`sticky top-0 z-40 w-full bg-[#143601] backdrop-blur-md border-b border-white/15 transition-colors ${className}`}>
-      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between ${effectiveRoleId === 4 ? "md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]" : ""}`}>
+      <div className={`${fullWidth ? 'w-full px-3 sm:px-4 lg:px-6' : 'max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8'} h-16 flex items-center justify-between gap-2 ${effectiveRoleId === 4 ? "md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]" : ""}`}>
         <div className="flex items-center min-w-0">
           <Link
             to={effectiveRoleId === 4 ? '/admin/usuarios' : effectiveRoleId === 1 ? '/ciudadano/reportes' : '/operador/emergencias'}
@@ -211,9 +213,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </span>
           </Link>
 
-          <div className="h-5 w-px bg-stone-200 mx-3 hidden sm:block shrink-0" />
+          <div className="h-5 w-px bg-stone-200 mx-3 hidden xl:block shrink-0" />
 
-          <div className="hidden sm:block shrink-0">
+          <div className="hidden xl:block shrink-0">
             <span className="rounded-md px-2.5 py-1 text-xs font-semibold bg-white/10 text-white border border-white/20 font-sans tracking-tight">
               {roleLabel}
             </span>
@@ -254,7 +256,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         )}
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 justify-self-end">
-          <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-white/90 bg-white/10 px-2.5 py-1 rounded-full border border-white/15 select-none">
+          <div className="hidden xl:flex items-center gap-1.5 text-xs font-medium text-white/90 bg-white/10 px-2.5 py-1 rounded-full border border-white/15 select-none">
             <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
             <span>En línea</span>
           </div>
@@ -270,7 +272,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   {initials}
                 </div>
 
-                <span className="text-sm font-semibold text-white hidden sm:block truncate max-w-[150px]">
+                <span className="text-sm font-semibold text-white hidden lg:block truncate max-w-[150px]">
                   {userName}
                 </span>
 

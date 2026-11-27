@@ -115,9 +115,9 @@ export function AdminAuditPage() {
   const pagerButton = 'inline-flex items-center gap-1 rounded border border-stone-300 bg-white px-2.5 py-1.5 font-medium hover:bg-stone-100 disabled:opacity-40';
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-[#f5f6f4] text-stone-900">
-      <AppHeader className="shrink-0" />
-      <main className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-4 py-6 sm:px-8 lg:px-12 lg:py-9">
+    <div className="flex min-h-dvh flex-col bg-[#f5f6f4] text-stone-900 lg:h-dvh lg:overflow-hidden">
+      <AppHeader className="shrink-0" fullWidth />
+      <main className="flex min-h-0 min-w-0 w-full flex-1 flex-col p-3 sm:p-4 lg:px-6 lg:py-5">
         <header className="mb-5 flex shrink-0 flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Bitácora de auditoría</h1>
           <button type="button" disabled={downloading} onClick={() => void openBackup()}
@@ -127,7 +127,7 @@ export function AdminAuditPage() {
         </header>
         {!confirmBackup && backupError && <p role="alert" className="mb-3 text-sm text-red-700">{backupError}</p>}
         <Dialog open={confirmBackup} onOpenChange={open => { if (!downloading) setConfirmBackup(open); }}>
-          <DialogContent className="text-stone-900">
+          <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto text-stone-900">
             <DialogTitle>Autorizar respaldo</DialogTitle>
             <DialogDescription>{needsPasskey ? 'Configura una passkey para autorizar la descarga. Introduce tu contraseña de AMPAR para registrarla.' : 'Confirma con tu passkey para descargar una copia completa de la base de datos.'}</DialogDescription>
             <form className="grid gap-3" onSubmit={event => {
@@ -148,7 +148,7 @@ export function AdminAuditPage() {
             </form>
           </DialogContent>
         </Dialog>
-        <section aria-label="Registro de actividad" className="flex min-h-0 flex-col overflow-hidden rounded-md border border-stone-300 bg-white">
+        <section aria-label="Registro de actividad" className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-md border border-stone-300 bg-white">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-4 py-3 sm:px-5">
             <h2 className="text-base font-semibold">Registro de actividad</h2>
             <label className="flex w-full items-center gap-2 rounded border border-stone-300 px-3 text-stone-500 focus-within:border-green-800 sm:w-64">
@@ -157,7 +157,7 @@ export function AdminAuditPage() {
                 onChange={event => setQuery(event.target.value)} className="min-w-0 flex-1 bg-transparent py-2 text-sm text-stone-900 outline-none" />
             </label>
           </div>
-          <div className="min-h-0 overflow-auto">
+          <div className="hidden min-h-0 flex-1 overflow-auto md:block">
             <table className="w-full min-w-[840px] border-collapse text-left text-sm">
               <thead className="sticky top-0 z-10 bg-[#eef1ed] text-xs font-semibold text-stone-600">
                 <tr>{['Fecha y hora', 'Acción', 'Usuario', 'Módulo', 'IP de origen'].map(label =>
@@ -171,14 +171,34 @@ export function AdminAuditPage() {
                       <span className="block text-xs text-stone-500">{timeFormat.format(new Date(entry.fecha))}</span>
                     </td>
                     <td className="px-5 py-2.5 font-medium first-letter:uppercase" title={entry.accion}>{displayCode(entry.accion)}</td>
-                    <td className="px-5 py-2.5">{entry.usuario}<span className="block font-mono text-[11px] text-stone-500">{entry.usuarioId}</span></td>
+                    <td className="px-5 py-2.5 [overflow-wrap:anywhere]">{entry.usuario}<span className="block font-mono text-[11px] text-stone-500">{entry.usuarioId}</span></td>
                     <td className="px-5 py-2.5 text-stone-600 first-letter:uppercase" title={entry.modulo}>{displayCode(entry.modulo)}</td>
-                    <td className="px-5 py-2.5 font-mono text-xs">{entry.ip || '—'}</td>
+                    <td className="px-5 py-2.5 font-mono text-xs [overflow-wrap:anywhere]">{entry.ip || '—'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <ul className="divide-y divide-stone-200 md:hidden">
+            {entries.map(entry => (
+              <li key={entry.id} className="space-y-3 p-4 text-sm">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-semibold first-letter:uppercase">{displayCode(entry.accion)}</p>
+                  <time dateTime={entry.fecha} className="text-xs tabular-nums text-stone-500">
+                    {dateFormat.format(new Date(entry.fecha))} · {timeFormat.format(new Date(entry.fecha))}
+                  </time>
+                </div>
+                <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 text-xs">
+                  <dt className="text-stone-500">Usuario</dt>
+                  <dd className="[overflow-wrap:anywhere]">{entry.usuario}<span className="block font-mono text-[11px] text-stone-500">{entry.usuarioId}</span></dd>
+                  <dt className="text-stone-500">Módulo</dt>
+                  <dd className="first-letter:uppercase [overflow-wrap:anywhere]">{displayCode(entry.modulo)}</dd>
+                  <dt className="text-stone-500">IP de origen</dt>
+                  <dd className="font-mono [overflow-wrap:anywhere]">{entry.ip || '—'}</dd>
+                </dl>
+              </li>
+            ))}
+          </ul>
           {!entries.length && <p role={auditError ? 'alert' : 'status'} className="min-h-0 overflow-auto px-5 py-6 text-center text-sm text-stone-600">
             {auditError ? 'No se pudo consultar la bitácora.' : !audit ? 'Cargando registros…' : term ? 'Sin coincidencias en esta página.' : 'No hay registros en esta página.'}
           </p>}

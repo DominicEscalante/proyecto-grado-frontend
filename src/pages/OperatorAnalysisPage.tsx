@@ -153,13 +153,13 @@ export const OperatorAnalysisPage: React.FC = () => {
 
   return <div className={`flex h-dvh w-full flex-col overflow-hidden font-sans text-stone-900 ${theme.bg}`}>
     <InstitutionHeader />
-    <main className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-5 lg:p-6">
-      <section className="flex shrink-0 flex-col justify-between gap-3 border-b border-black/10 pb-4 sm:flex-row sm:items-center">
+    <main className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4 lg:p-6">
+      <section className="flex shrink-0 flex-col justify-between gap-3 border-b border-black/10 pb-4 xl:flex-row xl:items-center">
         <div><h1 className={`text-2xl font-semibold tracking-tight ${theme.accent}`}>Análisis de incidentes</h1><p className="mt-1 text-sm text-stone-500">Zonas agrupadas por cercanía. Se excluyen falsas alarmas.</p></div>
-        <div className="flex flex-wrap items-center gap-2" aria-label="Filtros del mapa">
-          <div className="flex rounded-lg bg-stone-100 p-1">{PERIODOS.map((item) => <button key={item.id} type="button" aria-pressed={period === item.id} onClick={() => { setPeriod(item.id); setCategory(''); setHourFilter(null); }} className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${period === item.id ? `${theme.active} text-white shadow-sm` : 'text-stone-600 hover:text-stone-900'}`}>{item.label}</button>)}</div>
+        <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label="Filtros del mapa">
+          <div className="grid w-full grid-cols-4 rounded-lg bg-stone-100 p-1 sm:w-auto">{PERIODOS.map((item) => <button key={item.id} type="button" aria-pressed={period === item.id} onClick={() => { setPeriod(item.id); setCategory(''); setHourFilter(null); }} className={`rounded-md px-2 py-2 text-xs font-semibold transition sm:px-3 ${period === item.id ? `${theme.active} text-white shadow-sm` : 'text-stone-600 hover:text-stone-900'}`}>{item.label}</button>)}</div>
           <Select value={institutionFilter} onValueChange={value => setInstitutionFilter(value as 'TODAS' | InstitucionTipo)}>
-            <SelectTrigger aria-label="Filtrar institución" className="w-48 bg-white"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Filtrar institución" className="w-full bg-white sm:w-48"><SelectValue /></SelectTrigger>
             <SelectContent>
               {!institution && <SelectItem value="TODAS">Todas las instituciones</SelectItem>}
               {institution !== 'BOMBEROS' && <SelectItem value="POLICIA">Policía</SelectItem>}
@@ -170,10 +170,10 @@ export const OperatorAnalysisPage: React.FC = () => {
       </section>
 
       <div className="flex shrink-0 flex-wrap items-end gap-4 rounded-md border border-stone-200 bg-white px-4 py-3 text-sm">
-        <div className="grid gap-1">
+        <div className="grid w-full min-w-0 gap-1 sm:w-56">
           <label htmlFor="analysis-category" className="text-xs font-semibold text-stone-600">Tipo de emergencia</label>
           <Select value={category ? `type:${category}` : 'all'} onValueChange={value => setCategory(value === 'all' ? '' : value.slice(5))}>
-            <SelectTrigger id="analysis-category" className="w-56 bg-white"><SelectValue /></SelectTrigger>
+            <SelectTrigger id="analysis-category" className="w-full min-w-0 bg-white [&>span]:truncate"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los tipos</SelectItem>
               {categories.filter(Boolean).map(type => <SelectItem key={type} value={`type:${type}`}>{type}</SelectItem>)}
@@ -181,10 +181,10 @@ export const OperatorAnalysisPage: React.FC = () => {
           </Select>
         </div>
         {(['Desde', 'Hasta'] as const).map((label, endpoint) => (
-        <div key={label} className="grid gap-1">
+        <div key={label} className="grid w-full min-w-0 gap-1 sm:w-44">
           <label htmlFor={`analysis-hour-${endpoint}`} className="text-xs font-semibold text-stone-600">{label} · Hora de La Paz</label>
           <DropdownMenu>
-            <DropdownMenuTrigger id={`analysis-hour-${endpoint}`} className="flex h-9 min-w-44 items-center gap-2 rounded-md border border-stone-300 bg-white px-3 text-sm hover:bg-stone-50">
+            <DropdownMenuTrigger id={`analysis-hour-${endpoint}`} className="flex h-9 w-full items-center gap-2 rounded-md border border-stone-300 bg-white px-3 text-sm hover:bg-stone-50">
               <Clock3 size={16} aria-hidden="true" />
               {hourFilter === null ? 'Todas las horas' : endpoint === 0 ? hourLabel(hourFilter[0]) : `${String(hourFilter[1]).padStart(2, '0')}:59`}
             </DropdownMenuTrigger>
@@ -218,29 +218,29 @@ export const OperatorAnalysisPage: React.FC = () => {
         {(category || hourFilter !== null) && <button onClick={() => { setCategory(''); setHourFilter(null); }} className="rounded px-3 py-2 text-xs font-semibold underline">Limpiar filtros</button>}
       </div>
 
-      <section className="grid shrink-0 grid-cols-2 gap-3 lg:grid-cols-3">
+      <section className="grid shrink-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <article className={`rounded-lg border bg-white p-4 ${theme.border}`}><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Reportes seleccionados</p><p className="mt-2 text-2xl font-bold text-stone-900">{isLoading ? '—' : filteredReports.length}</p><p className="mt-1 text-xs text-stone-500">{institutionFilter !== 'BOMBEROS' && `Policía: ${statistics.police} incidentes`}{institutionFilter === 'TODAS' && ' · '}{institutionFilter !== 'POLICIA' && `Bomberos: ${statistics.firefighters} incidentes`}</p></article>
         <article className={`rounded-lg border bg-white p-4 ${theme.border}`}><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Zonas de concentración</p><p className={`mt-2 text-2xl font-bold ${theme.accent}`}>{isLoading ? '—' : heatZones.length}</p><p className="mt-1 text-xs text-stone-500">Al menos 3 reportes próximos</p></article>
-        <article className={`col-span-2 rounded-lg border bg-white p-4 lg:col-span-1 ${theme.border}`}><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Horas pico · La Paz</p><p className={`mt-2 font-bold tabular-nums ${theme.accent}`}>{isLoading || !peakHours.length ? '—' : peakHours.join(' · ')}</p><p className="mt-1 text-xs text-stone-500">{peakHours.length > 0 ? `${peak} reportes en cada hora pico durante el período` : 'Sin registros en el período'}</p></article>
+        <article className={`rounded-lg border bg-white p-4 sm:col-span-2 lg:col-span-1 ${theme.border}`}><p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Horas pico · La Paz</p><p className={`mt-2 font-bold tabular-nums ${theme.accent}`}>{isLoading || !peakHours.length ? '—' : peakHours.join(' · ')}</p><p className="mt-1 text-xs text-stone-500">{peakHours.length > 0 ? `${peak} reportes en cada hora pico durante el período` : 'Sin registros en el período'}</p></article>
       </section>
 
       {error && <div role="status" className="shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">Sin conexión con la central. Reintentando automáticamente.</div>}
-      <section className="grid shrink-0 overflow-hidden rounded-lg border border-stone-200 bg-white lg:grid-cols-[2fr_1fr]" aria-label="Concentración territorial">
-        <div className="relative isolate min-h-[330px] lg:min-h-[420px]">
+      <section className="grid min-w-0 shrink-0 overflow-hidden rounded-lg border border-stone-200 bg-white lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]" aria-label="Concentración territorial">
+        <div className="relative isolate h-[clamp(18rem,50dvh,42rem)] min-w-0 lg:h-[clamp(26.25rem,50dvh,42rem)]">
           <div ref={mapContainer} tabIndex={0} className="absolute inset-0 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2" aria-label="Mapa de zonas numeradas según cantidad de reportes" />
           <div className="pointer-events-none absolute bottom-6 left-3 z-[500] rounded bg-white/95 px-3 py-2 text-xs shadow">
             <span className="text-amber-800">● 3–4 reportes</span> · <span className="text-red-800">● 5 o más</span>
           </div>
         </div>
-        <aside className="border-t border-stone-200 p-5 lg:border-l lg:border-t-0">
+        <aside className="flex min-h-0 min-w-0 flex-col border-t border-stone-200 p-4 sm:p-5 lg:h-[clamp(26.25rem,50dvh,42rem)] lg:border-l lg:border-t-0">
           <h2 className="font-semibold">Zonas con más reportes</h2>
           <p className="mt-1 text-xs text-stone-500">Selecciona una zona para ubicarla en el mapa.</p>
-          <ol className="mt-3 max-h-80 divide-y overflow-y-auto">
+          <ol className="mt-3 min-h-0 max-h-80 divide-y overflow-y-auto lg:max-h-none lg:flex-1">
             {heatZones.map((zone, index) => (
               <li key={`${zone.latitud},${zone.longitud}`}>
                 <button className="flex w-full gap-3 rounded py-3 text-left hover:bg-stone-50" onClick={() => map.current?.setView([zone.latitud, zone.longitud], 15)}>
                   <span className={`font-mono font-bold ${theme.accent}`}>{index + 1}</span>
-                  <span><strong className="block text-sm">{zone.referencia}</strong>
+                  <span className="min-w-0 [overflow-wrap:anywhere]"><strong className="block text-sm">{zone.referencia}</strong>
                     <span className="block text-xs text-stone-600">{zone.cantidadReportes} reportes · {zone.incidentes} incidentes</span>
                     <span className="block text-xs text-stone-600">Más reportado: {zone.tiposPrincipales.join(', ')}</span>
                   </span>
@@ -252,7 +252,7 @@ export const OperatorAnalysisPage: React.FC = () => {
         </aside>
       </section>
       <p className="shrink-0 text-xs text-stone-500">Las zonas se calculan con los reportes del período seleccionado, agrupados dentro de 300 m. Cada zona tiene al menos 3 reportes.</p>
-      <section className="grid shrink-0 gap-4 lg:grid-cols-[3fr_2fr]">
+      <section className="grid min-w-0 shrink-0 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <article className="min-w-0 rounded-md border border-stone-200 bg-white p-5">
           <h2 className="font-semibold">Distribución por hora</h2>
           <p className="mt-1 text-xs text-stone-500">Hora de La Paz · Selecciona una barra para filtrar el mapa.</p>
@@ -280,7 +280,7 @@ export const OperatorAnalysisPage: React.FC = () => {
             {analysis.types.map(([type, count]) => (
               <button key={type} aria-pressed={category === type} onClick={() => setCategory(type === category ? '' : type)}
                 className={`block w-full rounded px-2 py-1.5 text-left hover:bg-stone-100 ${category === type ? theme.soft : ''}`}>
-                <span className="flex justify-between gap-2 text-xs"><span>{type}</span><strong>{count}</strong></span>
+                <span className="flex justify-between gap-2 text-xs"><span className="min-w-0 [overflow-wrap:anywhere]">{type}</span><strong className="shrink-0">{count}</strong></span>
                 <span className="mt-1 block h-1.5 rounded bg-stone-100"><span className={`block h-full rounded ${theme.active}`} style={{ width: `${100 * count / analysis.types[0][1]}%` }} /></span>
               </button>
             ))}

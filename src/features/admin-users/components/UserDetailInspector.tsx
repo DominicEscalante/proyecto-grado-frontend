@@ -155,7 +155,7 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
 
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 sm:p-3.5 space-y-3">
           <div className="rounded-lg bg-[#F8FAFC] border border-stone-200 divide-y divide-stone-200/60 overflow-hidden text-xs">
-            <div className="py-2 px-3 flex items-center justify-between gap-2">
+            <div className="py-2 px-3 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
                 <IdentificationIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                 <span>Cédula de Identidad (CI):</span>
@@ -188,13 +188,13 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </div>
             </div>
 
-            <div className="py-2 px-3 flex items-center justify-between gap-2">
+            <div className="py-2 px-3 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
                 <EnvelopeIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                 <span>Correo Institucional:</span>
               </div>
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-[#143601] truncate max-w-[130px] font-mono text-[11px] font-semibold">
+              <div className="flex items-center gap-1.5 min-w-0 max-w-full">
+                <span className="text-[#143601] break-all font-mono text-[11px] font-semibold">
                   {user.email}
                 </span>
                 <button
@@ -215,7 +215,7 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </div>
             </div>
 
-            <div className="py-2 px-3 flex items-center justify-between gap-2">
+            <div className="py-2 px-3 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
                 <PhoneIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                 <span>Teléfono Celular:</span>
@@ -224,7 +224,7 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
             </div>
 
             {user.institucion && (
-              <div className="py-2 px-3 flex items-center justify-between gap-2">
+              <div className="py-2 px-3 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-stone-600 font-medium text-xs">
                   <BuildingOffice2Icon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                   <span>Institución / Rango:</span>
@@ -235,7 +235,7 @@ export const UserDetailInspector: React.FC<UserDetailInspectorProps> = ({
               </div>
             )}
 
-            <div className="py-2 px-3 flex items-center justify-between gap-2 text-xs">
+            <div className="py-2 px-3 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div className="flex items-center gap-2 text-stone-600 font-medium">
                 <CalendarIcon className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                 <span>Fecha de Alta:</span>

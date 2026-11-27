@@ -111,7 +111,7 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
   };
 
   return (
-    <div className="rounded-xl bg-white border border-stone-200 overflow-hidden shadow-xs flex flex-col h-full min-h-0">
+    <div className="rounded-xl bg-white border border-stone-200 overflow-hidden shadow-xs flex flex-col lg:h-full min-h-0 min-w-0">
       <div className="shrink-0">
         <Toolbar
           metrics={metrics}
@@ -276,8 +276,8 @@ export const UserMasterList: React.FC<UserMasterListProps> = ({
                   <ChevronRightIcon className="w-4 h-4 text-stone-400 shrink-0" />
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-stone-100 text-xs">
-                  <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-stone-100 text-xs">
+                  <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     <span className="font-mono text-[10px] font-semibold text-stone-600">
                       CI: {u.ci}
                     </span>
